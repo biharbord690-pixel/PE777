@@ -1,0 +1,6 @@
+{
+  "name": "PE777",
+  "description": "PE777 is a premium high-roller casino and gaming financial dashboard. Features secure QR deposits with UTR confirmation, simulated bank withdrawals, unified wallet indicators, interactive game lobbies, and tailored high-rate winning algorithms.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
