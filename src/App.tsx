@@ -40,7 +40,7 @@ function AppContent() {
 
       // Simple auth filter guard
       const cached = localStorage.getItem('jw777_current_user');
-      if (!cached && hash !== 'splash' && hash !== 'login') {
+      if (!cached && hash !== 'splash' && hash !== 'login' && hash !== 'admin') {
         window.location.hash = '#login';
         return;
       }

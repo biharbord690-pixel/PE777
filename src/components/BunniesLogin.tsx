@@ -7,6 +7,7 @@ import React, { useState } from 'react';
 import { useCasinoStore } from '../store';
 import { ShieldCheck, User, Lock, Eye, EyeOff, Sparkles, Key, AlertCircle } from 'lucide-react';
 import { toast } from 'react-hot-toast';
+import lobbyImg from '../assets/images/pe777_slots_lobby_1781925818795.jpg';
 
 interface BunniesLoginProps {
   onSuccess: () => void;
@@ -63,8 +64,8 @@ export default function BunniesLogin({ onSuccess }: BunniesLoginProps) {
       // Perform store actions
       const res = store.registerUser(cleanUsername, password);
       if (res.success) {
-        toast.success(`Welcome to PE777! Account registered, logging in...`, {
-          icon: '👑',
+        toast.success(`Welcome to PE777! Account registered with ₹10 Login Bonus!`, {
+          icon: '🎁',
           style: { background: '#111', color: '#e8b923', border: '1px solid #e8b923' }
         });
 
@@ -136,7 +137,7 @@ export default function BunniesLogin({ onSuccess }: BunniesLoginProps) {
           {/* Animated Mascot logo */}
           <div className="relative w-28 h-28 mx-auto border-2 border-amber-400 p-1 rounded-full bg-gradient-to-tr from-neutral-900 to-purple-950/40 shadow-[0_0_20px_rgba(232,185,35,0.45)] overflow-hidden mb-3.5">
             <img 
-              src="/src/assets/images/pe777_slots_lobby_1781925818795.jpg"
+              src={lobbyImg}
               alt="Mascot Logo"
               referrerPolicy="no-referrer"
               className="w-full h-full object-cover rounded-full"

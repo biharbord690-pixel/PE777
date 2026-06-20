@@ -11,6 +11,7 @@ import {
   Smartphone, QrCode, ArrowDownRight, RefreshCw, Send, AlertTriangle
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
+import cardImg from '../assets/images/bunny_card_illustration_1781800152051.jpg';
 
 interface BunniesWalletProps {
   onBack: () => void;
@@ -269,7 +270,7 @@ export default function BunniesWallet({ onBack, onRequestViewNotifications }: Bu
             {/* Illustrated Gold Card from AI Assets! */}
             <div className="absolute right-[-10px] bottom-[-20px] w-36 h-36 opacity-35 filter blur-[1px] transform rotate-[15deg]">
               <img 
-                src="/src/assets/images/bunny_card_illustration_1781800152051.jpg"
+                src={cardImg}
                 alt="Fintech Gold Card"
                 referrerPolicy="no-referrer"
                 className="w-full h-full object-contain rounded-xl"

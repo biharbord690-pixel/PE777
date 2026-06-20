@@ -224,13 +224,23 @@ export const CasinoProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }
 
     // Save user creds
-    users[cleanUsername] = { password: pass, coins: 0, createdAt: Date.now() };
+    users[cleanUsername] = { password: pass, coins: 10, createdAt: Date.now() };
     localStorage.setItem('jw777_users', JSON.stringify(users));
 
     // Initialize individual stores
-    localStorage.setItem(`jw777_coins_${cleanUsername}`, '0');
+    localStorage.setItem(`jw777_coins_${cleanUsername}`, '10');
     localStorage.setItem(`jw777_history_${cleanUsername}`, JSON.stringify([]));
-    localStorage.setItem(`jw777_transactions_${cleanUsername}`, JSON.stringify([]));
+    
+    // Add registration signup bonus transaction
+    const initialTx: Transaction = {
+      id: Math.random().toString(36).substring(2, 9) + Date.now(),
+      type: 'bonus',
+      gameName: undefined,
+      description: 'Sign Up Bonus',
+      amount: 10,
+      timestamp: Date.now()
+    };
+    localStorage.setItem(`jw777_transactions_${cleanUsername}`, JSON.stringify([initialTx]));
     localStorage.setItem(`jw777_daily_bonus_${cleanUsername}`, JSON.stringify({ lastClaim: null, currentDay: 1 }));
     localStorage.setItem(`jw777_hourly_bonus_${cleanUsername}`, JSON.stringify({ lastClaim: null }));
     localStorage.setItem(`jw777_settings_${cleanUsername}`, JSON.stringify({ sound: true, animations: true }));

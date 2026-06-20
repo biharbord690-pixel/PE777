@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { GameIcon3D } from './GameIcon3D';
+import lobbyImg from '../assets/images/pe777_slots_lobby_1781925818795.jpg';
 
 interface BunniesDashboardProps {
   onNavigate: (path: string) => void;
@@ -204,7 +205,7 @@ export default function BunniesDashboard({
         <div className="flex items-center gap-2.5">
           <div className="w-9 h-9 rounded-full border-2 border-[#e8b923] p-0.5 bg-gradient-to-tr from-neutral-900 via-purple-950 to-neutral-850 overflow-hidden shrink-0 shadow-[0_0_10px_rgba(232,185,35,0.4)]">
             <img 
-              src="/src/assets/images/pe777_slots_lobby_1781925818795.jpg"
+              src={lobbyImg}
               alt="PE777 Slots"
               referrerPolicy="no-referrer"
               className="w-full h-full object-cover rounded-full"
@@ -241,14 +242,16 @@ export default function BunniesDashboard({
           >
             <User2 size={13} className="text-[#e8b923]" />
           </button>
-
-          <button
-            onClick={() => onNavigate('#admin')}
-            className="p-2 bg-pink-950/30 border border-pink-500/25 hover:border-pink-500/80 rounded-xl transition-all text-pink-300 hover:text-white cursor-pointer shadow-[0_0_8px_rgba(236,72,153,0.15)] flex items-center justify-center"
-            title="Admin Dashboard"
-          >
-            <Shield size={13} className="text-pink-400" />
-          </button>
+          
+          {store.currentUser === 'ahirgaming' && (
+            <button
+              onClick={() => onNavigate('#admin')}
+              className="p-2 bg-pink-950/30 border border-pink-500/25 hover:border-pink-500/80 rounded-xl transition-all text-pink-300 hover:text-white cursor-pointer shadow-[0_0_8px_rgba(236,72,153,0.15)] flex items-center justify-center"
+              title="Admin Dashboard"
+            >
+              <Shield size={13} className="text-pink-400" />
+            </button>
+          )}
         </div>
       </header>
 
