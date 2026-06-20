@@ -23,7 +23,7 @@ interface HandResult {
 export default function TeenPatti({ onBack }: { onBack: () => void }) {
   const store = useCasinoStore();
 
-  const [selectedChip, setSelectedChip] = useState<number>(500);
+  const [selectedChip, setSelectedChip] = useState<number>(10);
   const [anteBet, setAnteBet] = useState<number>(0);
   const [playBet, setPlayBet] = useState<number>(0);
 
@@ -172,7 +172,16 @@ export default function TeenPatti({ onBack }: { onBack: () => void }) {
 
     let roundNum = parseInt(localStorage.getItem('tp_round_num') || '0', 10);
     const winPattern = [true, false, true, false, true, true, true, false, true, true];
-    const shouldWin = winPattern[roundNum];
+    
+    let shouldWin = false;
+    if (store.coins > 500) {
+      // High balance soft cap: Win 3 out of 10 games (rounds 2, 5, 8)
+      const highBalanceWinners = [2, 5, 8];
+      shouldWin = highBalanceWinners.includes(roundNum);
+    } else {
+      shouldWin = winPattern[roundNum];
+    }
+    
     localStorage.setItem('tp_round_num', ((roundNum + 1) % 10).toString());
 
     let attempts = 0;
@@ -448,17 +457,17 @@ export default function TeenPatti({ onBack }: { onBack: () => void }) {
           <div className="bg-[#111] border border-neutral-800/80 p-4 rounded-2xl space-y-4 select-none">
             <div className="space-y-1.5">
               <span className="text-[10px] font-black text-neutral-400 uppercase tracking-widest block">Choose ante chip</span>
-              <div className="flex items-center justify-between">
-                {[100, 500, 1000, 5000, 10000].map((c) => (
+              <div className="flex items-center justify-between gap-1">
+                {[1, 2, 3, 5, 10, 50, 100, 500, 1000].map((c) => (
                   <button
                     key={c}
                     disabled={gamePhase !== 'betting'}
                     onClick={() => setSelectedChip(c)}
-                    className={`w-11 h-11 rounded-full font-black text-xs font-mono border-2 flex items-center justify-center transition-transform hover:scale-115 cursor-pointer ${
+                    className={`w-9 h-9 rounded-full font-black text-[10px] font-mono border-2 flex items-center justify-center transition-transform hover:scale-115 cursor-pointer ${
                       selectedChip === c ? 'ring-2 ring-amber-400 border-amber-400 text-[#e8b923] bg-neutral-950 scale-105 shadow-md' : 'bg-neutral-950 text-zinc-400 border-zinc-900'
                     }`}
                   >
-                    {c >= 1000 ? `${c / 1000}K` : c}
+                    {c}
                   </button>
                 ))}
               </div>

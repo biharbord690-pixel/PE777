@@ -10,9 +10,11 @@ import { GameCategory, GameMetadata } from '../types';
 import { 
   Plus, History, User2, Bell, Sparkles, Coins, 
   ArrowUpRight, ArrowDownLeft, Trophy, Gift, ArrowRight, 
-  Search, MessageSquare, Send, ChevronRight, Star, Flame, CheckCircle
+  Search, MessageSquare, Send, ChevronRight, Star, Flame, CheckCircle,
+  Shield
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
+import { GameIcon3D } from './GameIcon3D';
 
 interface BunniesDashboardProps {
   onNavigate: (path: string) => void;
@@ -154,7 +156,9 @@ export default function BunniesDashboard({
       style: { background: '#111', color: '#e8b923', border: '1px solid #e8b923' }
     });
 
-    if (gameId === 'baccarat') {
+    if (gameId === 'luckywheel') {
+      onNavigate('#luckywheel');
+    } else if (gameId === 'baccarat') {
       onNavigate('#baccarat');
     } else if (gameId === 'dragontiger') {
       onNavigate('#dragontiger');
@@ -188,27 +192,27 @@ export default function BunniesDashboard({
   });
 
   return (
-    <div className="w-full max-w-md mx-auto min-h-screen bg-black text-white flex flex-col relative overflow-y-auto pb-24 select-none">
+    <div className="w-full max-w-md mx-auto min-h-screen bg-transparent text-white flex flex-col relative overflow-y-auto pb-24 select-none">
       
-      {/* Hyper colourful neon blur spots */}
-      <div className="absolute top-[-5%] left-[-15%] w-80 h-80 bg-purple-900/15 rounded-full filter blur-[100px] pointer-events-none" />
-      <div className="absolute top-[35%] right-[-20%] w-96 h-96 bg-amber-500/10 rounded-full filter blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-[20%] left-[-25%] w-96 h-96 bg-purple-950/15 rounded-full filter blur-[130px] pointer-events-none" />
+      {/* Hyper colourful neon holographic glow layers */}
+      <div className="absolute top-[-5%] left-[-15%] w-80 h-80 bg-cyan-500/20 rounded-full filter blur-[100px] pointer-events-none" />
+      <div className="absolute top-[35%] right-[-20%] w-96 h-96 bg-pink-500/15 rounded-full filter blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-[20%] left-[-25%] w-96 h-96 bg-[#e8b923]/10 rounded-full filter blur-[130px] pointer-events-none" />
 
-      {/* High-Contrast Luxury Header */}
-      <header className="sticky top-0 bg-black/85 backdrop-blur-md px-4 py-3 pb-3 flex items-center justify-between border-b border-zinc-900/90 z-20 shadow-lg">
+      {/* High-Contrast Luxury Header with glowing bottom edge */}
+      <header className="sticky top-0 bg-gradient-to-b from-[#1b0c36]/90 via-[#0e0622]/90 to-[#190930]/90 border-b border-pink-500/30 shadow-[0_4px_25px_rgba(236,72,153,0.18)] z-20 backdrop-blur-md px-4 py-3 pb-3 flex items-center justify-between">
         <div className="flex items-center gap-2.5">
-          <div className="w-9 h-9 rounded-full border-2 border-[#e8b923] p-0.5 bg-gradient-to-tr from-neutral-900 via-purple-950 to-neutral-850 overflow-hidden shrink-0">
+          <div className="w-9 h-9 rounded-full border-2 border-[#e8b923] p-0.5 bg-gradient-to-tr from-neutral-900 via-purple-950 to-neutral-850 overflow-hidden shrink-0 shadow-[0_0_10px_rgba(232,185,35,0.4)]">
             <img 
-              src="/src/assets/images/bunny_luxury_mascot_1781800135949.jpg"
-              alt="Mascot Avatar"
+              src="/src/assets/images/pe777_slots_lobby_1781925818795.jpg"
+              alt="PE777 Slots"
               referrerPolicy="no-referrer"
               className="w-full h-full object-cover rounded-full"
             />
           </div>
           <div className="text-left font-sans">
-            <span className="text-[8.5px] uppercase tracking-[0.25em] text-[#e8b923] font-black block">Elite VIP Lounge</span>
-            <h1 className="text-sm font-black text-white mt-0.5 tracking-wider uppercase">PE777 Elite</h1>
+            <span className="text-[8.5px] uppercase tracking-[0.25em] text-cyan-400 font-black block">Elite VIP Lounge</span>
+            <h1 className="text-sm font-black text-white mt-0.5 tracking-wider uppercase bg-clip-text text-transparent bg-gradient-to-r from-white via-amber-200 to-[#e8b923]">PE777 Elite</h1>
           </div>
         </div>
 
@@ -216,26 +220,34 @@ export default function BunniesDashboard({
         <div className="flex items-center gap-1.5">
           <button
             onClick={() => onNavigate('#add_cash')}
-            className="px-2.5 py-1.5 bg-zinc-950 hover:bg-neutral-900 border border-[#e8b923]/30 hover:border-[#e8b923]/80 rounded-xl text-[10px] text-white font-extrabold flex items-center gap-1 cursor-pointer transition-all uppercase tracking-wider"
+            className="px-3 py-1.5 button-3d-gold hover:scale-105 rounded-xl text-[10px] text-zinc-950 font-black flex items-center gap-1 cursor-pointer transition-all uppercase tracking-wider"
           >
-            <Plus size={11} className="text-[#e8b923]" /> Add Fund
+            <Plus size={11} className="text-zinc-950" /> Add Fund
           </button>
 
           <button
             onClick={onOpenNotifications}
-            className="p-2 bg-zinc-950 border border-zinc-900 hover:border-zinc-800 rounded-xl transition-all relative text-zinc-300 hover:text-white cursor-pointer"
+            className="p-2 bg-indigo-950/70 border border-cyan-500/25 hover:border-cyan-500/80 rounded-xl transition-all relative text-cyan-300 hover:text-white cursor-pointer shadow-[0_0_8px_rgba(6,182,212,0.15)]"
           >
             <Bell size={15} />
             {notifyBadgeCount > 0 && (
-              <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-purple-500 border border-black animate-pulse" />
+              <span className="absolute top-1 right-1 w-2.5 h-2.5 rounded-full bg-pink-500 border border-black animate-pulse shadow-[0_0_8px_rgba(236,72,153,0.8)]" />
             )}
           </button>
           
           <button
             onClick={onOpenProfile}
-            className="p-2 bg-zinc-950 border border-zinc-900 hover:border-zinc-850 rounded-xl transition-all text-zinc-300 hover:text-white cursor-pointer flex items-center gap-1 font-extrabold text-[10px] uppercase tracking-wider"
+            className="p-2 bg-indigo-950/70 border border-cyan-500/25 hover:border-cyan-500/80 rounded-xl transition-all text-cyan-300 hover:text-white cursor-pointer shadow-[0_0_8px_rgba(6,182,212,0.15)] flex items-center gap-1 font-extrabold text-[10px] uppercase tracking-wider"
           >
             <User2 size={13} className="text-[#e8b923]" />
+          </button>
+
+          <button
+            onClick={() => onNavigate('#admin')}
+            className="p-2 bg-pink-950/30 border border-pink-500/25 hover:border-pink-500/80 rounded-xl transition-all text-pink-300 hover:text-white cursor-pointer shadow-[0_0_8px_rgba(236,72,153,0.15)] flex items-center justify-center"
+            title="Admin Dashboard"
+          >
+            <Shield size={13} className="text-pink-400" />
           </button>
         </div>
       </header>
@@ -243,25 +255,25 @@ export default function BunniesDashboard({
       {/* Main Page scroll content */}
       <div className="p-4 flex-1 flex flex-col space-y-4">
 
-        {/* GLOWING DYNAMIC PROGRESSIVE JACKPOT TAPE */}
-        <div className="bg-gradient-to-r from-purple-950/40 via-purple-900/10 to-purple-950/40 border border-purple-500/30 rounded-2xl p-4 text-center relative overflow-hidden shadow-[0_0_15px_rgba(168,85,247,0.15)] select-none">
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-amber-500/5 via-transparent to-transparent opacity-60 pointer-events-none" />
-          <div className="flex justify-center items-center gap-1 text-[9px] font-black uppercase tracking-[0.3em] text-[#e8b923] animate-pulse">
+        {/* GLOWING DYNAMIC PROGRESSIVE JACKPOT TAPE - Luxury Gold Electroplating Frame */}
+        <div className="bg-gradient-to-r from-[#1d0e3a]/80 via-[#2f134f]/70 to-[#1d0e3a]/80 border-2 border-[#e8b923] rounded-2xl p-4 text-center relative overflow-hidden shadow-[0_0_25px_rgba(232,185,35,0.4),_inset_0_1px_1px_rgba(255,255,255,0.1)] select-none">
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-yellow-500/10 via-transparent to-transparent opacity-70 pointer-events-none" />
+          <div className="flex justify-center items-center gap-1.5 text-[9.5px] font-black uppercase tracking-[0.3em] text-[#e8b923] animate-pulse">
             <Star size={10} className="fill-[#e8b923] stroke-none" />
-            <span>CUMULATIVE BUNNIES MEGA JACKPOT</span>
+            <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#e8b923] via-yellow-250 to-[#e8b923] font-sans">PE777 CUMULATIVE VIP JACKPOT</span>
             <Star size={10} className="fill-[#e8b923] stroke-none" />
           </div>
-          <h2 className="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-[#e8b923] via-yellow-300 to-amber-500 font-mono tracking-wider mt-1 filter drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
+          <h2 className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-yellow-200 to-amber-500 font-mono tracking-wider mt-1.5 filter drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
             ₹{jackpot.toLocaleString()}
           </h2>
-          <div className="text-[8px] text-zinc-500 tracking-widest font-black uppercase mt-0.5">
-            Updated live • payout certified by escrow
+          <div className="text-[8px] text-cyan-300 tracking-[0.2em] font-black uppercase mt-1">
+            Certified Gateway Escrow • Payout Live
           </div>
         </div>
 
-        {/* SEARCH BAR WIDGET */}
+        {/* SEARCH BAR WIDGET - Cybernetic Glowing Cyan Frame */}
         <div className="relative">
-          <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-650">
+          <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-cyan-400">
             <Search size={14} />
           </span>
           <input
@@ -269,12 +281,12 @@ export default function BunniesDashboard({
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search through 24 premium game modules..."
-            className="w-full py-3 pl-10 pr-4 bg-zinc-950 border border-zinc-900 focus:border-[#e8b923]/40 rounded-2xl text-[11px] font-sans font-bold text-white placeholder-zinc-700 outline-none transition-all shadow-inner"
+            className="w-full py-3 pl-10 pr-4 bg-slate-950/80 border border-cyan-500/35 focus:border-[#e8b923] hover:border-cyan-400 rounded-2xl text-[11px] font-sans font-bold text-cyan-50 placeholder-indigo-300/40 outline-none transition-all shadow-[inset_0_2px_6px_rgba(0,0,0,0.8),_0_0_8px_rgba(6,182,212,0.1)]"
           />
         </div>
 
         {/* CATEGORY SWITCHERS GRID */}
-        <div className="flex gap-1.5 overflow-x-auto pb-1 select-none">
+        <div className="flex gap-1.5 overflow-x-auto pb-1 select-none scrollbar-thin">
           {['ALL', 'SLOTS', 'CARDS', 'CRASH', 'FISH'].map((cat) => (
             <button
               key={cat}
@@ -297,8 +309,8 @@ export default function BunniesDashboard({
               }}
               className={`py-2 px-3.5 rounded-xl text-[10px] font-black uppercase tracking-wider shrink-0 cursor-pointer border transition-all ${
                 activeCategory === cat
-                  ? 'bg-gradient-to-r from-purple-800 to-[#e8b923]/90 text-white border-purple-500/50 shadow-[0_0_10px_rgba(232,185,35,0.2)]'
-                  : 'bg-zinc-950 text-zinc-500 border-zinc-900 hover:text-zinc-300'
+                  ? 'bg-gradient-to-r from-cyan-500 via-pink-500 to-amber-400 text-black border-transparent font-black shadow-[0_0_12px_rgba(236,72,153,0.55)] scale-102'
+                  : 'bg-indigo-950/40 text-cyan-300 border-cyan-500/20 hover:text-white hover:bg-slate-900/60'
               }`}
             >
               {cat}
@@ -324,48 +336,67 @@ export default function BunniesDashboard({
               {filteredGames.map((g) => {
                 const isGameHot = g.isHot || g.id === 'lucky777' || g.id === 'baccarat' || g.id === 'teenpatti';
                 const isGameNew = g.isNew || g.id === 'alienhunter' || g.id === 'aviator';
+                const customImg = store.adminSettings?.gameImages?.[g.id];
 
                 return (
                   <button
                     key={g.id}
                     onClick={() => launchGameEngine(g.id, g.name)}
-                    className="aspect-square bg-gradient-to-tr from-[#09090b] via-[#050508] to-neutral-900 hover:to-[#171322] border border-zinc-90 w-full rounded-2xl flex flex-col items-center justify-center p-2 text-center transition-all hover:scale-[1.03] active:scale-[0.98] outline-none cursor-pointer relative overflow-hidden"
+                    className="aspect-square bg-gradient-to-tr from-[#1b103e]/90 via-[#0e0722]/90 to-indigo-950/95 hover:from-[#2e1966] hover:to-[#db2777]/20 border border-cyan-500/30 w-full rounded-2xl flex flex-col items-center justify-center p-2 text-center transition-all hover:scale-[1.04] active:scale-[0.98] outline-none cursor-pointer relative overflow-hidden shadow-[0_6px_15px_rgba(0,0,0,0.5)]"
                     style={{
-                      borderBottom: `2.5px solid ${g.theme || '#e8b923'}50`
+                      borderBottom: `2.5px solid ${g.theme || '#e11d48'}`
                     }}
                   >
+                    {/* Background Image if customImg is set */}
+                    {customImg ? (
+                      <div className="absolute inset-0 z-0 select-none pointer-events-none">
+                        <img 
+                          src={customImg} 
+                          alt={g.name} 
+                          referrerPolicy="no-referrer"
+                          className="w-full h-full object-cover"
+                        />
+                        {/* Semi-transparent dark gradient overlay for text readability */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/45 to-black/10" />
+                      </div>
+                    ) : null}
+
                     {/* Hot or New Badge overlay */}
                     {isGameHot && (
-                      <div className="absolute top-1 left-1 px-1 py-[1.5px] bg-red-600/90 text-white text-[6.5px] font-black rounded uppercase tracking-wider scale-90">
+                      <div className="absolute top-1 left-1 px-1 py-[1.5px] bg-red-600/90 text-white text-[6.5px] font-black rounded uppercase tracking-wider scale-90 z-10">
                         🔥 HOT
                       </div>
                     )}
                     {isGameNew && (
-                      <div className="absolute top-1 left-1 px-1 py-[1.5px] bg-purple-600/95 text-white text-[6.5px] font-black rounded uppercase tracking-wider scale-90">
+                      <div className="absolute top-1 left-1 px-1 py-[1.5px] bg-purple-600/95 text-white text-[6.5px] font-black rounded uppercase tracking-wider scale-90 z-10">
                         ✨ NEW
                       </div>
                     )}
 
-                    {/* Emoji Thumbnail container with colorful glowing ring */}
-                    <div 
-                      className="w-11 h-11 rounded-full flex items-center justify-center text-xl shadow-lg border-2 mb-1.5 shrink-0"
-                      style={{
-                        borderColor: g.theme || '#e8b923',
-                        backgroundColor: `${g.theme || '#e8b923'}10`,
-                        boxShadow: `0 0 10px ${g.theme || '#e8b923'}25`
-                      }}
-                    >
-                      {g.thumbnail || '🎰'}
-                    </div>
+                    {/* Content spacer or standard 3D icon wrapper */}
+                    {customImg ? (
+                      <div className="flex-1 z-10" />
+                    ) : (
+                      /* Glowing 3D Vector Icon */
+                      <div 
+                        className={`w-11 h-11 ${store.adminSettings?.squareImages ? 'rounded-xl' : 'rounded-full'} flex items-center justify-center shadow-lg border-2 mb-1.5 shrink-0 bg-neutral-950/40 p-0.5 z-10`}
+                        style={{
+                          borderColor: g.theme || '#e8b923',
+                          boxShadow: `0 0 10px ${g.theme || '#e8b923'}30`
+                        }}
+                      >
+                        <GameIcon3D gameId={g.id} themeColor={g.theme} className="w-9 h-9 object-contain" />
+                      </div>
+                    )}
 
-                    <span className="text-[10px] font-black text-zinc-100 truncate w-full break-all leading-tight">
+                    <span className="text-[10px] font-black text-zinc-100 truncate w-full break-all leading-tight z-10">
                       {g.name}
                     </span>
                     <span 
-                      className="text-[6.5px] font-black tracking-widest uppercase mt-0.5 px-1 py-[1px] rounded"
+                      className="text-[6.5px] font-black tracking-widest uppercase mt-0.5 px-1 py-[1px] rounded z-10"
                       style={{
                         color: g.theme || '#e8b923',
-                        backgroundColor: `${g.theme || '#e8b923'}08`
+                        backgroundColor: customImg ? 'rgba(0,0,0,0.5)' : `${g.theme || '#e8b923'}08`
                       }}
                     >
                       {g.category[0]}
@@ -403,16 +434,16 @@ export default function BunniesDashboard({
           </div>
 
           {/* Messages Body */}
-          <div className="bg-[#09090b] border border-zinc-950/80 rounded-2xl p-2.5 space-y-2 flex-1 overflow-y-auto max-h-[180px]">
+          <div className="bg-gradient-to-b from-[#150d32]/85 to-[#0b051e]/90 border border-pink-500/25 rounded-2xl p-2.5 space-y-2 flex-1 overflow-y-auto max-h-[180px] shadow-[inset_0_2px_8px_rgba(0,0,0,0.6)]">
             {messages.map((m) => (
               <div key={m.id} className="text-[9.5px] leading-relaxed flex items-start gap-1 justify-between">
                 <div className="truncate max-w-[80%] pr-1">
                   <span className={`font-extrabold mr-1 ${
-                    m.vip === 'Imperial VIP' ? 'text-purple-400' : m.vip === 'Gold Club' ? 'text-[#e8b923]' : 'text-zinc-400'
+                    m.vip === 'Imperial VIP' ? 'text-pink-400' : m.vip === 'Gold Club' ? 'text-[#e8b923]' : 'text-cyan-400'
                   }`}>
                     [{m.vip}] {m.user}:
                   </span>
-                  <span className="text-zinc-300 truncate font-semibold">{m.text}</span>
+                  <span className="text-stone-200 truncate font-semibold">{m.text}</span>
                 </div>
                 
                 {m.prize && (
@@ -431,11 +462,11 @@ export default function BunniesDashboard({
               value={userMsg}
               onChange={(e) => setUserMsg(e.target.value)}
               placeholder="Send message to live lounge..."
-              className="flex-1 py-2.5 px-3 bg-zinc-950 border border-zinc-900 text-[10px] outline-none text-white rounded-xl placeholder-zinc-800"
+              className="flex-1 py-2.5 px-3 bg-[#0d0725]/85 border border-cyan-500/30 text-[10px] outline-none text-cyan-50 rounded-xl placeholder-indigo-300/40 shadow-inner"
             />
             <button
               type="submit"
-              className="p-2.5 bg-[#e8b923] hover:bg-yellow-400 text-black rounded-xl text-center flex items-center justify-center cursor-pointer font-extrabold hover:scale-105 border-0"
+              className="p-2.5 bg-gradient-to-r from-pink-500 to-fuchsia-650 hover:brightness-110 text-white rounded-xl text-center flex items-center justify-center cursor-pointer font-extrabold hover:scale-105 border-0 shadow-md"
             >
               <Send size={12} />
             </button>

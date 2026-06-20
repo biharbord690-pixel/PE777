@@ -62,3 +62,12 @@ export interface LeaderboardEntry {
   totalWinnings: number;
   avatarColor: string;
 }
+
+export interface AdminSettings {
+  adminId: string;
+  adminPassword: string;
+  squareImages: boolean;
+  gameImages: Record<string, string>;
+  slotOverrideEmojis: Record<string, string>;
+  aviatorImg: string;
+}

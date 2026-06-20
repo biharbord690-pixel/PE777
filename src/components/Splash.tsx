@@ -53,41 +53,48 @@ export default function Splash({ onComplete }: SplashProps) {
   }, [onComplete]);
 
   return (
-    <div className="fixed inset-0 bg-[#000] flex flex-col items-center justify-center z-50 p-6 select-none overflow-hidden text-white">
+    <div className="fixed inset-0 bg-luxury-holographic flex flex-col items-center justify-center z-50 p-6 select-none overflow-hidden text-white">
       {/* Visual background details */}
-      <div className="absolute inset-0 bg-radial-at-c from-purple-950/20 via-black to-[#000] pointer-events-none" />
-      <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-purple-900/10 rounded-full filter blur-[120px] pointer-events-none" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-[#1d0e3a]/40 via-transparent to-transparent pointer-events-none" />
+      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-cyan-500/10 rounded-full filter blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-pink-500/10 rounded-full filter blur-[120px] pointer-events-none" />
 
       <div className="relative z-10 flex flex-col items-center max-w-sm w-full text-center">
         
-        {/* Animated 3D Golden Mascot Display */}
+        {/* Animated 3D Golden Mascot and Premium Image Display */}
         <motion.div
-          initial={{ scale: 0.82, opacity: 0 }}
+          initial={{ scale: 0.85, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 0.9, ease: 'easeOut' }}
-          className="flex flex-col items-center mb-7"
+          transition={{ duration: 1.1, ease: 'easeOut' }}
+          className="flex flex-col items-center mb-6 w-full"
         >
-          {/* Neon/Gold Status Mascot frame */}
-          <div className="relative mb-4 w-28 h-28 p-1 border-2 border-[#e8b923]/40 rounded-full bg-gradient-to-tr from-neutral-900 to-purple-950/60 shadow-[0_0_20px_rgba(232,185,35,0.25)] overflow-hidden">
+          {/* Main 3D Slots Lobby Visual representation requested by user */}
+          <div className="relative mb-6 w-72 h-72 p-2 border-2 border-amber-400 rounded-3xl bg-neutral-950 shadow-[0_15px_40px_rgba(232,185,35,0.3),_0_0_20px_rgba(6,182,212,0.3)] overflow-hidden group">
             <img 
-              src="/src/assets/images/bunny_luxury_mascot_1781800135949.jpg"
-              alt="Golden Mascot Loading"
+              src="/src/assets/images/pe777_slots_lobby_1781925818795.jpg"
+              alt="PE777 Premium Elite Slots"
               referrerPolicy="no-referrer"
-              className="w-full h-full object-cover rounded-full"
+              className="w-full h-full object-cover rounded-2xl transform scale-102 hover:scale-105 transition-transform duration-700"
             />
-            {/* Highlight pulse overlay */}
+            {/* Holographic light scan laser effect */}
             <motion.div
-              animate={{ opacity: [0.1, 0.4, 0.1] }}
-              transition={{ repeat: Infinity, duration: 1.8, ease: 'easeInOut' }}
-              className="absolute inset-0 bg-purple-500 rounded-full filter blur-md mix-blend-screen"
+              animate={{ 
+                top: ['-100%', '200%'],
+                opacity: [0, 1, 0]
+              }}
+              transition={{ repeat: Infinity, duration: 2.8, ease: 'easeInOut' }}
+              className="absolute left-0 right-0 h-10 bg-gradient-to-b from-transparent via-cyan-400/40 to-transparent skew-y-12 mix-blend-overlay pointer-events-none"
+              style={{ top: '-100%' }}
             />
+            {/* Ambient hot pink glow indicator inside image container */}
+            <div className="absolute inset-0 bg-gradient-to-t from-purple-950/40 via-transparent to-cyan-500/10 mix-blend-color-dodge pointer-events-none" />
           </div>
 
-          <span className="text-4xl font-black tracking-widest text-white leading-none">
+          <span className="text-4xl font-extrabold tracking-wider bg-clip-text text-transparent bg-gradient-to-r from-amber-400 via-yellow-250 to-pink-500 leading-none drop-shadow-[0_4px_10px_rgba(0,0,0,0.8)] filter">
             PE777
           </span>
-          <span className="text-[9px] tracking-[0.3em] font-light text-[#e8b923] uppercase mt-2.5">
-            LUXURY FINTECH SUPERPORTAL
+          <span className="text-[10px] tracking-[0.35em] font-black text-[#e8b923] uppercase mt-2 bg-neutral-900/40 px-3 py-1 rounded-full border border-[#e8b923]/20">
+            HOLOGRAPHIC VIP PLATINUM
           </span>
         </motion.div>
 

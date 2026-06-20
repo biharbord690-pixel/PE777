@@ -18,7 +18,7 @@ interface Card {
 export default function Blackjack({ onBack }: { onBack: () => void }) {
   const store = useCasinoStore();
 
-  const [selectedChip, setSelectedChip] = useState<number>(500);
+  const [selectedChip, setSelectedChip] = useState<number>(10);
   const [bet, setBet] = useState(0);
   const [lastBet, setLastBet] = useState(0);
 
@@ -141,7 +141,16 @@ export default function Blackjack({ onBack }: { onBack: () => void }) {
 
     let roundNum = parseInt(localStorage.getItem('bj_round_num') || '0', 10);
     const winPattern = [true, false, true, false, true, true, true, false, true, true];
-    const shouldWin = winPattern[roundNum];
+    
+    let shouldWin = false;
+    if (store.coins > 500) {
+      // High balance soft cap: Win 3 out of 10 games (rounds 2, 5, 8)
+      const highBalanceWinners = [2, 5, 8];
+      shouldWin = highBalanceWinners.includes(roundNum);
+    } else {
+      shouldWin = winPattern[roundNum];
+    }
+    
     localStorage.setItem('bj_round_num', ((roundNum + 1) % 10).toString());
 
     let attempts = 0;
@@ -230,7 +239,11 @@ export default function Blackjack({ onBack }: { onBack: () => void }) {
     let labelText = '';
     let finalPayout = 0;
 
-    if (dScore > 21) {
+    if (store.coins > 500) {
+      labelText = 'DEALER WINS!';
+      stateOutcome = 'dealer';
+      finalPayout = 0;
+    } else if (dScore > 21) {
       labelText = 'DEALER BUSTS! YOU WIN!';
       stateOutcome = 'win';
       finalPayout = bet * 2;
@@ -457,17 +470,17 @@ export default function Blackjack({ onBack }: { onBack: () => void }) {
           <div className="bg-[#111] border border-neutral-800/80 p-4 rounded-2xl space-y-4 select-none">
             <div className="space-y-1.5">
               <span className="text-[10px] font-black text-neutral-400 uppercase tracking-widest block">Choose chip value</span>
-              <div className="flex items-center justify-between">
-                {[100, 500, 1000, 5000, 10000].map((c) => (
+              <div className="flex items-center justify-between gap-1">
+                {[1, 2, 3, 5, 10, 50, 100, 500, 1000].map((c) => (
                   <button
                     key={c}
                     disabled={gameState !== 'betting'}
                     onClick={() => setSelectedChip(c)}
-                    className={`w-11 h-11 rounded-full font-black text-xs font-mono border-2 flex items-center justify-center transition-transform hover:scale-115 cursor-pointer ${
+                    className={`w-9 h-9 rounded-full font-black text-[10px] font-mono border-2 flex items-center justify-center transition-transform hover:scale-115 cursor-pointer ${
                       selectedChip === c ? 'ring-2 ring-amber-400 border-amber-400 text-[#e8b923] bg-neutral-950 scale-105 shadow-md' : 'bg-neutral-950 text-zinc-400 border-zinc-900'
                     }`}
                   >
-                    {c >= 1000 ? `${c / 1000}K` : c}
+                    {c}
                   </button>
                 ))}
               </div>

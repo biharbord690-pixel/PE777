@@ -123,49 +123,48 @@ export default function BunniesLogin({ onSuccess }: BunniesLoginProps) {
   };
 
   return (
-    <div className="w-full max-w-md mx-auto min-h-screen bg-black text-white flex flex-col justify-center items-center p-4 relative overflow-hidden select-none">
+    <div className="w-full max-w-md mx-auto min-h-screen bg-transparent text-white flex flex-col justify-center items-center p-4 relative overflow-hidden select-none">
       
       {/* Glow overlays */}
-      <div className="absolute top-0 right-0 w-80 h-80 bg-purple-950/20 rounded-full filter blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-0 left-0 w-72 h-72 bg-amber-500/5 rounded-full filter blur-[100px] pointer-events-none" />
+      <div className="absolute top-0 right-0 w-80 h-80 bg-cyan-500/20 rounded-full filter blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-0 left-0 w-72 h-72 bg-pink-500/15 rounded-full filter blur-[100px] pointer-events-none" />
 
-      <div className="w-full max-w-sm space-y-6 z-10 py-6">
+      <div className="w-full max-w-sm space-y-6 z-10 py-6 animate-fade-in">
         
         {/* Brand visual header */}
         <div className="text-center space-y-2">
           {/* Animated Mascot logo */}
-          <div className="relative w-24 h-24 mx-auto border-2 border-[#e8b923]/40 p-1 rounded-full bg-gradient-to-tr from-zinc-900 to-purple-950/40 shadow-2xl overflow-hidden mb-3.5">
+          <div className="relative w-28 h-28 mx-auto border-2 border-amber-400 p-1 rounded-full bg-gradient-to-tr from-neutral-900 to-purple-950/40 shadow-[0_0_20px_rgba(232,185,35,0.45)] overflow-hidden mb-3.5">
             <img 
-              src="/src/assets/images/bunny_luxury_mascot_1781800135949.jpg"
+              src="/src/assets/images/pe777_slots_lobby_1781925818795.jpg"
               alt="Mascot Logo"
               referrerPolicy="no-referrer"
               className="w-full h-full object-cover rounded-full"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent pointer-events-none" />
           </div>
 
           <div className="space-y-0.5">
             <span className="text-[10px] tracking-[0.25em] text-[#e8b923] font-black uppercase block leading-none">
-              VIP SECURED FINANCE APP
+              PE777 MOBILE SUPERPORTAL
             </span>
-            <h1 className="text-2xl font-black text-white uppercase tracking-wider">
-              PE777
+            <h1 className="text-3xl font-black bg-clip-text text-transparent bg-gradient-to-r from-white via-amber-200 to-[#e8b923] uppercase tracking-wider">
+              PE777 Elite
             </h1>
-            <p className="text-[10px] text-zinc-500 font-semibold uppercase leading-relaxed max-w-[280px] mx-auto">
-              Simulated mobile UPI payment cards, secure top-ups, and entertainment lobby.
+            <p className="text-[10px] text-cyan-300 font-semibold uppercase leading-relaxed max-w-[280px] mx-auto">
+              Simulated mobile UPI payment cards, secure top-ups, and luxury entertainment lobby.
             </p>
           </div>
         </div>
 
         {/* Tab switcher */}
-        <div className="bg-zinc-950/80 p-1 rounded-xl border border-zinc-900 flex">
+        <div className="bg-indigo-950/45 p-1 rounded-xl border border-cyan-500/25 flex shadow-inner">
           <button
             type="button"
             onClick={() => setActiveTab('login')}
             className={`flex-1 py-2 rounded-lg text-xs font-black uppercase tracking-wider transition-all cursor-pointer ${
               activeTab === 'login'
-                ? 'bg-gradient-to-r from-purple-700 to-[#e8b923]/80 text-white shadow'
-                : 'text-zinc-500 hover:text-zinc-300'
+                ? 'bg-gradient-to-r from-cyan-500 via-pink-500 to-amber-400 text-black font-black shadow-[0_0_10px_rgba(236,72,153,0.45)]'
+                : 'text-cyan-400 hover:text-white'
             }`}
           >
             Access Login
@@ -175,8 +174,8 @@ export default function BunniesLogin({ onSuccess }: BunniesLoginProps) {
             onClick={() => setActiveTab('register')}
             className={`flex-1 py-2 rounded-lg text-xs font-black uppercase tracking-wider transition-all cursor-pointer ${
               activeTab === 'register'
-                ? 'bg-gradient-to-r from-[#e8b923]/80 to-amber-500 text-neutral-950 shadow'
-                : 'text-zinc-500 hover:text-zinc-300'
+                ? 'bg-gradient-to-r from-cyan-500 via-pink-500 to-amber-400 text-black font-black shadow-[0_0_10px_rgba(236,72,153,0.45)]'
+                : 'text-cyan-400 hover:text-white'
             }`}
           >
             Register VIP
@@ -184,44 +183,44 @@ export default function BunniesLogin({ onSuccess }: BunniesLoginProps) {
         </div>
 
         {/* Secure Form */}
-        <div className="bg-[#0e0e0f]/90 border border-zinc-900 rounded-3xl p-5 space-y-4 shadow-xl">
+        <div className="bg-gradient-to-br from-indigo-950/80 via-slate-900/90 to-purple-950/80 border border-fuchsia-500/25 rounded-3xl p-5 space-y-4 shadow-[0_12px_40px_rgba(0,0,0,0.6),_0_0_15px_rgba(236,72,153,0.1)]">
           <form onSubmit={handleSubmit} className="space-y-4 text-left">
             
             {/* Username Input */}
             <div className="space-y-1.5">
-              <label className="text-[9px] font-extrabold text-zinc-400 uppercase tracking-widest block leading-none">
+              <label className="text-[9px] font-extrabold text-cyan-300 uppercase tracking-widest block leading-none">
                 VERIFIED USERNAME
               </label>
               <div className="relative flex items-center">
-                <span className="absolute left-3 text-zinc-600"><User size={14} /></span>
+                <span className="absolute left-3 text-cyan-400"><User size={14} /></span>
                 <input
                   type="text"
                   value={username}
                   onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
                   placeholder="e.g. administrator"
-                  className="w-full bg-zinc-950/90 border border-zinc-800/80 focus:border-[#e8b923]/50 focus:ring-1 focus:ring-amber-500/10 rounded-xl pl-9 pr-3 py-3 text-xs text-white focus:outline-none transition-all font-semibold font-mono placeholder-zinc-800"
+                  className="w-full bg-slate-950/90 border border-cyan-500/30 focus:border-[#e8b923] focus:ring-1 focus:ring-amber-500/10 rounded-xl pl-9 pr-3 py-3 text-xs text-white focus:outline-none transition-all font-semibold font-mono placeholder-indigo-300/30"
                 />
               </div>
             </div>
 
             {/* Password Input */}
             <div className="space-y-1.5">
-              <label className="text-[9px] font-extrabold text-zinc-400 uppercase tracking-widest block leading-none">
+              <label className="text-[9px] font-extrabold text-cyan-300 uppercase tracking-widest block leading-none">
                 SECURITY PASSWORD
               </label>
               <div className="relative flex items-center">
-                <span className="absolute left-3 text-zinc-600"><Lock size={14} /></span>
+                <span className="absolute left-3 text-cyan-400"><Lock size={14} /></span>
                 <input
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full bg-zinc-950/90 border border-zinc-800/80 focus:border-[#e8b923]/50 focus:ring-1 focus:ring-amber-500/10 rounded-xl pl-9 pr-10 py-3 text-xs text-white focus:outline-none transition-all font-mono"
+                  className="w-full bg-slate-950/90 border border-cyan-500/30 focus:border-[#e8b923] focus:ring-1 focus:ring-amber-500/10 rounded-xl pl-9 pr-10 py-3 text-xs text-white focus:outline-none transition-all font-mono"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 text-zinc-600 hover:text-white transition-all cursor-pointer border-0 bg-transparent p-0"
+                  className="absolute right-3 text-cyan-400 hover:text-white transition-all cursor-pointer border-0 bg-transparent p-0"
                 >
                   {showPassword ? <EyeOff size={14} /> : <Eye size={14} />}
                 </button>
@@ -231,17 +230,17 @@ export default function BunniesLogin({ onSuccess }: BunniesLoginProps) {
             {/* Confirm Password (Register Mode only) */}
             {activeTab === 'register' && (
               <div className="space-y-1.5 animate-fade-in">
-                <label className="text-[9px] font-extrabold text-[#e8b923]/80 uppercase tracking-widest block leading-none">
+                <label className="text-[9px] font-extrabold text-pink-400 uppercase tracking-widest block leading-none">
                   CONFIRM PASSWORD
                 </label>
                 <div className="relative flex items-center">
-                  <span className="absolute left-3 text-zinc-600"><Key size={14} /></span>
+                  <span className="absolute left-3 text-pink-400"><Key size={14} /></span>
                   <input
                     type="password"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     placeholder="••••••••"
-                    className="w-full bg-zinc-950/90 border border-zinc-800/80 focus:border-[#e8b923]/50 focus:ring-1 focus:ring-amber-500/10 rounded-xl pl-9 pr-3 py-3 text-xs text-white focus:outline-none transition-all font-mono"
+                    className="w-full bg-slate-950/90 border border-pink-500/30 focus:border-[#e8b923] focus:ring-1 focus:ring-amber-500/10 rounded-xl pl-9 pr-3 py-3 text-xs text-white focus:outline-none transition-all font-mono"
                   />
                 </div>
               </div>
@@ -251,11 +250,7 @@ export default function BunniesLogin({ onSuccess }: BunniesLoginProps) {
             <button
               type="submit"
               disabled={isLoading}
-              className={`w-full py-3.5 rounded-xl font-extrabold text-xs uppercase tracking-widest cursor-pointer border-0 ${
-                activeTab === 'login'
-                  ? 'bg-gradient-to-r from-purple-700 via-purple-600 to-[#e8b923] text-white shadow hover:scale-[1.01]'
-                  : 'bg-gradient-to-r from-[#e8b923] via-amber-500 to-yellow-500 text-neutral-950 shadow hover:scale-[1.01]'
-              } active:scale-99 transition-all text-center flex items-center justify-center gap-1.5`}
+              className="w-full py-3 button-3d-gold hover:scale-[1.01] rounded-xl font-extrabold text-xs uppercase tracking-widest cursor-pointer text-center flex items-center justify-center gap-1.5 shadow-md"
             >
               <ShieldCheck size={14} />
               {activeTab === 'login' ? 'Confirm & Authorize' : 'Initialize VIP Account'}

@@ -193,5 +193,14 @@ export const ALL_GAMES: GameMetadata[] = [
     category: ['CRASH'],
     thumbnail: '🌙',
     theme: '#4f46e5'
+  },
+  {
+    id: 'luckywheel',
+    name: 'Golden Lucky Wheel',
+    category: ['CRASH', 'HOT', 'NEW'],
+    thumbnail: '🎡',
+    isHot: true,
+    isNew: true,
+    theme: '#e8b923'
   }
 ];

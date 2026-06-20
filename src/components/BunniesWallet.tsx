@@ -531,7 +531,7 @@ export default function BunniesWallet({ onBack, onRequestViewNotifications }: Bu
               {/* Actual customizable QR simulation - FIXED to generate a real working dynamic QR code */}
               <div className="w-48 h-48 bg-white border-2 border-zinc-950 rounded-xl p-2 relative flex items-center justify-center shadow-md">
                 <img 
-                  src={`https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(`upi://pay?pa=7779915662@ybl&pn=Yadav&am=${topUpAmount}&cu=INR`)}`}
+                  src={`https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(`upi://pay?pa=7779915662@ybl&pn=PE777&am=${topUpAmount}&cu=INR`)}`}
                   alt="UPI QR Code"
                   className="w-full h-full object-contain"
                 />

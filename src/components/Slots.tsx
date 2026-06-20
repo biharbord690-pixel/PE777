@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { useCasinoStore } from '../store';
 import { Coins, ArrowLeft, Info, RefreshCw, TriangleAlert } from 'lucide-react';
 import { toast } from 'react-hot-toast';
+import { SlotSymbol } from './SlotSymbol';
 
 interface SlotsProps {
   gameId: string;
@@ -84,7 +85,7 @@ export default function Slots({ gameId, gameName, onBack }: SlotsProps) {
   const theme = SLOT_THEMES[gameId] || SLOT_THEMES['lucky777'];
 
   // Current Bet Setting
-  const [bet, setBet] = useState(100);
+  const [bet, setBet] = useState(10);
   const [isSpinning, setIsSpinning] = useState(false);
   const [grid, setGrid] = useState<string[][]>([
     [theme.symbols[0], theme.symbols[1], theme.symbols[2]],
@@ -109,8 +110,12 @@ export default function Slots({ gameId, gameName, onBack }: SlotsProps) {
   // Active winning lines index
   const [winLines, setWinLines] = useState<number[]>([]);
 
+  // Fortune Game multiplier reel states
+  const [multiplierReel, setMultiplierReel] = useState<string[]>(['2x', '4x', '5x']);
+  const [activeMultiplier, setActiveMultiplier] = useState<number>(1);
+
   // Chip options
-  const chips = [100, 500, 1000, 5000];
+  const chips = [1, 2, 3, 5, 10, 50, 100, 500, 1000];
 
   // Helper spin trigger
   const spinReels = () => {
@@ -164,6 +169,12 @@ export default function Slots({ gameId, gameName, onBack }: SlotsProps) {
         [getRandomSymbol(), getRandomSymbol(), getRandomSymbol()],
         [getRandomSymbol(), getRandomSymbol(), getRandomSymbol()],
       ]);
+      const pM = ['1x', '2x', '4x', '5x'];
+      setMultiplierReel([
+        pM[Math.floor(Math.random() * pM.length)],
+        pM[Math.floor(Math.random() * pM.length)],
+        pM[Math.floor(Math.random() * pM.length)],
+      ]);
       counter++;
       if (counter >= 10) {
         clearInterval(interval);
@@ -182,6 +193,9 @@ export default function Slots({ gameId, gameName, onBack }: SlotsProps) {
   };
 
   const finalizeSpin = () => {
+    // Check soft cap condition if balance > 500
+    const isHighBalance = store.coins > 500;
+
     // Generate final layout
     let finalGrid = [
       [getRandomSymbol(), getRandomSymbol(), getRandomSymbol()],
@@ -191,12 +205,28 @@ export default function Slots({ gameId, gameName, onBack }: SlotsProps) {
 
     let roundNum = parseInt(localStorage.getItem('slots_round_num') || '0', 10);
     const winPattern = [true, false, true, false, true, true, true, false, true, true];
-    const shouldWin = winPattern[roundNum];
+    
+    let shouldWin = false;
+    let isCappedWin = false;
+
+    if (isHighBalance) {
+      // Out of 10 games, let them win 3 games (30% win rate), e.g. on round 2, 5, 8
+      const highBalanceWinners = [2, 5, 8];
+      shouldWin = highBalanceWinners.includes(roundNum);
+      isCappedWin = shouldWin; // restrict multipliers / payout
+    } else {
+      shouldWin = winPattern[roundNum];
+    }
+    
     localStorage.setItem('slots_round_num', ((roundNum + 1) % 10).toString());
 
     if (shouldWin) {
       // Force middle row to match
-      const winSym = theme.symbols[Math.floor(Math.random() * theme.symbols.length)] || '🍒';
+      let winSym = theme.symbols[Math.floor(Math.random() * theme.symbols.length)] || '🍒';
+      if (isCappedWin) {
+        // use lower paying symbols for lower payout (0th or 1st symbol)
+        winSym = theme.symbols[0] || '🍒';
+      }
       finalGrid[1] = [winSym, winSym, winSym];
     } else {
       // Force no matches by mixing symbols
@@ -209,6 +239,21 @@ export default function Slots({ gameId, gameName, onBack }: SlotsProps) {
     }
 
     setGrid(finalGrid);
+
+    // Multiplier reel selection for ALL SLOTS !!
+    let chosenMultiplier = 1;
+    let multOptions = ['1x', '2x', '4x', '5x'];
+    if (isCappedWin) {
+      // Force low multipliers if capped win
+      multOptions = ['1x', '2x'];
+    }
+    const topMult = multOptions[Math.floor(Math.random() * multOptions.length)];
+    const middleMult = multOptions[Math.floor(Math.random() * multOptions.length)];
+    const bottomMult = multOptions[Math.floor(Math.random() * multOptions.length)];
+    setMultiplierReel([topMult, middleMult, bottomMult]);
+    
+    chosenMultiplier = parseInt(middleMult.replace('x', ''), 10);
+    setActiveMultiplier(chosenMultiplier);
 
     // Evaluate pays
     // Lines:
@@ -263,18 +308,26 @@ export default function Slots({ gameId, gameName, onBack }: SlotsProps) {
       freeSpinsAwarded = 5;
     }
 
+    if (isHighBalance && !shouldWin) {
+      multiplierVal = 0;
+      matchedLines.length = 0;
+      scatterCount = 0;
+      freeSpinsAwarded = 0;
+    }
+
     setWinLines(matchedLines);
     setIsSpinning(false);
 
     if (multiplierVal > 0) {
       // Big Winner
-      const winnings = bet * multiplierVal;
-      setPayoutMultiplier(multiplierVal);
+      const finalMult = multiplierVal * chosenMultiplier;
+      const winnings = bet * finalMult;
+      setPayoutMultiplier(finalMult);
       setWinCoins(winnings);
       setShowWinOverlay(true);
 
       // Add to balance
-      store.addCoins(winnings, `Won on ${gameName} slots (x${multiplierVal})`, gameName, 'game_win');
+      store.addCoins(winnings, `Won on ${gameName} slots (x${finalMult})`, gameName, 'game_win');
       store.addGameLog(gameId, gameName, bet, winnings, 'win');
 
       if (freeSpinsLeft > 0) {
@@ -414,56 +467,88 @@ export default function Slots({ gameId, gameName, onBack }: SlotsProps) {
           {/* Inner cabinet neon highlight border */}
           <div className="absolute inset-0 border border-amber-500/10 rounded-2xl pointer-events-none" />
 
-          {/* 3x3 Slots Grid Box */}
-          <div className="grid grid-cols-3 gap-3 relative pb-1">
-            {/* Payline indicators representation overlay */}
-            <div className="absolute inset-0 pointer-events-none select-none z-10">
-              {/* Row middle */}
-              {winLines.includes(1) && (
-                <div className="absolute top-[50%] left-0 right-0 h-[3px] bg-red-500 shadow-[0_0_8px_#ef4444]" />
-              )}
-              {/* Row top */}
-              {winLines.includes(2) && (
-                <div className="absolute top-[16.6%] left-0 right-0 h-[3px] bg-blue-500 shadow-[0_0_8px_#3b82f6]" />
-              )}
-              {/* Row bottom */}
-              {winLines.includes(3) && (
-                <div className="absolute top-[83.3%] left-0 right-0 h-[3px] bg-green-500 shadow-[0_0_8px_#22c55e]" />
-              )}
-              {/* Diagonal TL-BR */}
-              {winLines.includes(4) && (
-                <div className="absolute top-0 bottom-0 left-0 right-0 border-t-2 border-l-2 origin-top-left rotate-[34deg] w-[122%] h-0 border-yellow-500 shadow-[0_0_8px_#eab308] translate-y-3 pl-3" />
-              )}
-              {/* Diagonal BL-TR */}
-              {winLines.includes(5) && (
-                <div className="absolute top-0 bottom-0 left-0 right-0 border-b-2 border-l-2 origin-bottom-left -rotate-[34deg] w-[122%] h-0 border-indigo-500 shadow-[0_0_8px_#6366f1] -translate-y-3 pl-3" />
-              )}
+          {/* Main Reels Area */}
+          <div className="flex gap-3 relative pb-1 items-center justify-center w-full">
+            {/* 3x3 Slots Grid Box */}
+            <div className="grid grid-cols-3 gap-3 relative flex-1 h-[300px]">
+              {/* Payline indicators representation overlay */}
+              <div className="absolute inset-0 pointer-events-none select-none z-10">
+                {/* Row middle */}
+                {winLines.includes(1) && (
+                  <div className="absolute top-[50%] left-0 right-0 h-[3px] bg-red-500 shadow-[0_0_8px_#ef4444]" />
+                )}
+                {/* Row top */}
+                {winLines.includes(2) && (
+                  <div className="absolute top-[16.6%] left-0 right-0 h-[3px] bg-blue-500 shadow-[0_0_8px_#3b82f6]" />
+                )}
+                {/* Row bottom */}
+                {winLines.includes(3) && (
+                  <div className="absolute top-[83.3%] left-0 right-0 h-[3px] bg-green-500 shadow-[0_0_8px_#22c55e]" />
+                )}
+                {/* Diagonal TL-BR */}
+                {winLines.includes(4) && (
+                  <div className="absolute top-0 bottom-0 left-0 right-0 border-t-2 border-l-2 origin-top-left rotate-[34deg] w-[122%] h-0 border-yellow-500 shadow-[0_0_8px_#eab308] translate-y-3 pl-3" />
+                )}
+                {/* Diagonal BL-TR */}
+                {winLines.includes(5) && (
+                  <div className="absolute top-0 bottom-0 left-0 right-0 border-b-2 border-l-2 origin-bottom-left -rotate-[34deg] w-[122%] h-0 border-indigo-500 shadow-[0_0_8px_#6366f1] -translate-y-3 pl-3" />
+                )}
+              </div>
+
+              {/* Reel Columns */}
+              {[0, 1, 2].map((colId) => (
+                <div
+                  key={colId}
+                  className="bg-[#121212] border-2 border-neutral-900 rounded-2xl flex flex-col divide-y divide-neutral-950 p-1 shadow-[inset_0_4px_10px_rgba(0,0,0,0.8)] overflow-hidden h-[300px] justify-around"
+                >
+                  {[0, 1, 2].map((rowId) => (
+                    <motion.div
+                      key={rowId}
+                      className="flex flex-col items-center justify-center p-2 rounded-xl text-4xl h-24 select-none relative"
+                      animate={isSpinning ? { y: [100, -100, 0] } : {}}
+                      transition={{ repeat: isSpinning ? Infinity : 0, duration: 0.15 }}
+                    >
+                      {grid[rowId] ? (
+                        <SlotSymbol symbol={grid[rowId][colId]} size={56} />
+                      ) : (
+                        <SlotSymbol symbol="🍒" size={56} />
+                      )}
+                    </motion.div>
+                  ))}
+                </div>
+              ))}
             </div>
 
-            {/* Reel Columns */}
-            {[0, 1, 2].map((colId) => (
-              <div
-                key={colId}
-                className="bg-[#121212] border-2 border-neutral-900 rounded-2xl flex flex-col divide-y divide-neutral-950 p-1 shadow-[inset_0_4px_10px_rgba(0,0,0,0.8)] overflow-hidden h-[300px] justify-around"
-              >
-                {[0, 1, 2].map((rowId) => (
-                  <motion.div
-                    key={rowId}
-                    className="flex flex-col items-center justify-center p-2 rounded-xl text-4xl h-24 select-none relative"
-                    animate={isSpinning ? { y: [100, -100, 0] } : {}}
-                    transition={{ repeat: isSpinning ? Infinity : 0, duration: 0.15 }}
-                  >
-                    {grid[rowId] ? (
-                      <span className="filter drop-shadow-md transform active:scale-110">
-                        {grid[rowId][colId]}
-                      </span>
-                    ) : (
-                      '🍒'
-                    )}
-                  </motion.div>
-                ))}
+            {/* 4th Column: Win Multiplier Reel */}
+            <div
+              className="w-20 bg-[#121212] border-2 border-[#e8b923] rounded-2xl flex flex-col divide-y divide-neutral-900 p-1 h-[300px] justify-around relative overflow-hidden shadow-[0_0_15px_rgba(232,185,35,0.3)] bg-gradient-to-b from-neutral-950 via-neutral-900 to-neutral-950"
+            >
+              {/* Label indicator */}
+              <div className="absolute top-1 inset-x-0 text-center select-none z-10 pointer-events-none">
+                <span className="text-[6px] font-black tracking-widest text-[#e8b923] bg-neutral-950 px-1 py-0.5 rounded border border-[#e8b923]/30 uppercase">
+                  Multiplier
+                </span>
               </div>
-            ))}
+
+              {multiplierReel.map((mult, id) => (
+                <motion.div
+                  key={id}
+                  className={`flex flex-col items-center justify-center p-1 font-black select-none relative transition-all duration-300 h-24 ${
+                    id === 1
+                      ? 'text-[#e8b923] scale-110'
+                      : 'text-zinc-600 scale-90 opacity-60'
+                  }`}
+                  animate={isSpinning ? { y: [100, -100, 0] } : {}}
+                  transition={{ repeat: isSpinning ? Infinity : 0, duration: 0.12 }}
+                >
+                  <div className={`w-11 h-11 rounded-full flex items-center justify-center border-2 text-sm bg-neutral-950/80 font-black shadow-md ${
+                    id === 1 ? 'border-[#e8b923] shadow-[0_0_12px_rgba(232,185,35,0.35)]' : 'border-zinc-800'
+                  }`}>
+                    {mult}
+                  </div>
+                </motion.div>
+              ))}
+            </div>
           </div>
 
           {/* Winning payout notifications card banner */}
@@ -514,7 +599,7 @@ export default function Slots({ gameId, gameName, onBack }: SlotsProps) {
             {/* Incrementor field bar */}
             <div className="flex items-center gap-1.5">
               <button
-                onClick={() => handleBetIncrement(-100)}
+                onClick={() => handleBetIncrement(-1)}
                 disabled={isSpinning || freeSpinsLeft > 0}
                 className="w-10 h-10 bg-neutral-900 border border-neutral-800/85 hover:border-neutral-500/50 rounded-xl font-bold flex items-center justify-center hover:bg-neutral-800 transition-colors text-zinc-400 hover:text-white disabled:opacity-40 cursor-pointer"
               >
@@ -526,7 +611,7 @@ export default function Slots({ gameId, gameName, onBack }: SlotsProps) {
               </div>
 
               <button
-                onClick={() => handleBetIncrement(100)}
+                onClick={() => handleBetIncrement(1)}
                 disabled={isSpinning || freeSpinsLeft > 0}
                 className="w-10 h-10 bg-neutral-900 border border-neutral-800/85 hover:border-neutral-500/50 rounded-xl font-bold flex items-center justify-center hover:bg-neutral-800 transition-colors text-zinc-400 hover:text-white disabled:opacity-40 cursor-pointer"
               >
@@ -647,7 +732,7 @@ export default function Slots({ gameId, gameName, onBack }: SlotsProps) {
 
                 <div className="flex items-center justify-between text-sm py-1">
                   <div className="flex items-center gap-2">
-                    <span className="text-xl">{theme.symbols[5]}</span>
+                    <SlotSymbol symbol={theme.symbols[5] || '🐉'} size={28} />
                     <span className="text-zinc-300 font-bold">Premium Core</span>
                   </div>
                   <span className="text-[#e8b923] font-black font-mono">x35 Bet</span>
@@ -655,7 +740,7 @@ export default function Slots({ gameId, gameName, onBack }: SlotsProps) {
 
                 <div className="flex items-center justify-between text-sm py-1">
                   <div className="flex items-center gap-2">
-                    <span className="text-xl">⭐</span>
+                    <SlotSymbol symbol="⭐" size={28} />
                     <span className="text-zinc-300 font-bold">Wild Scatter</span>
                   </div>
                   <span className="text-[#e8b923] font-black font-mono">x50 Bet & Free Spins</span>
@@ -663,7 +748,7 @@ export default function Slots({ gameId, gameName, onBack }: SlotsProps) {
 
                 <div className="flex items-center justify-between text-sm py-1">
                   <div className="flex items-center gap-2">
-                    <span className="text-xl">{theme.symbols[4]}</span>
+                    <SlotSymbol symbol={theme.symbols[4] || '👑'} size={28} />
                     <span className="text-zinc-300 font-bold">Medium Lucky</span>
                   </div>
                   <span className="text-[#e8b923] font-black font-mono">x15 Bet</span>
@@ -680,7 +765,7 @@ export default function Slots({ gameId, gameName, onBack }: SlotsProps) {
                 <div className="flex items-center gap-2.5 mt-5 p-2 bg-[#e01f26]/10 border border-[#e01f26]/30 rounded-xl">
                   <TriangleAlert size={14} className="text-[#e01f26] shrink-0" />
                   <p className="text-[10px] text-zinc-400 leading-normal">
-                    Wild Scatter <span className="text-white font-bold">⭐</span> substitutes for adjacent symbols on any payline. 3 Scatters triggers the Free Spins loops!
+                    Wild Scatter substitutes for adjacent symbols on any payline. 3 Scatters triggers the Free Spins loops!
                   </p>
                 </div>
               </div>

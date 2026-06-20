@@ -4,7 +4,8 @@
  */
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { User, Transaction, GameLog, DailyBonusState, HourlyBonusState, AppSettings, LeaderboardEntry } from './types';
+import { User, Transaction, GameLog, DailyBonusState, HourlyBonusState, AppSettings, LeaderboardEntry, AdminSettings } from './types';
+import { getDb, doc, getDoc, setDoc, updateDoc, onSnapshot } from './firebase';
 
 interface CasinoContextType {
   currentUser: string | null;
@@ -16,6 +17,7 @@ interface CasinoContextType {
   leaderboard: LeaderboardEntry[];
   dailyBonus: DailyBonusState;
   hourlyBonus: HourlyBonusState;
+  adminSettings: AdminSettings;
   loginUser: (username: string, isGuestMode: boolean) => { success: boolean; message: string };
   registerUser: (username: string, pass: string) => { success: boolean; message: string };
   logoutUser: () => void;
@@ -23,12 +25,14 @@ interface CasinoContextType {
   deductCoins: (amount: number, description: string, gameName?: string, type?: Transaction['type']) => { success: boolean, currentBalance: number };
   addGameLog: (gameId: string, gameName: string, betAmount: number, payoutAmount: number, result: GameLog['result']) => void;
   updateSettings: (newSettings: Partial<AppSettings>) => void;
+  updateAdminSettings: (newAdminSettings: Partial<AdminSettings>) => void;
   claimDailyBonus: () => { amount: number; day: number } | null;
   claimHourlyBonus: () => number | null;
   resetAccount: () => void;
   clearAllData: () => void;
   getHourlyCooldown: () => number; // seconds left
   getDailyCooldown: () => number; // seconds left until midnight
+  setCoins: (amount: number) => void;
 }
 
 const CasinoContext = createContext<CasinoContextType | undefined>(undefined);
@@ -114,6 +118,55 @@ export const CasinoProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [dailyBonus, setDailyBonus] = useState<DailyBonusState>({ lastClaim: null, currentDay: 1 });
   const [hourlyBonus, setHourlyBonus] = useState<HourlyBonusState>({ lastClaim: null });
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
+  const [adminSettings, setAdminSettings] = useState<AdminSettings>({
+    adminId: 'ahirgaming',
+    adminPassword: '854336',
+    squareImages: true,
+    gameImages: {},
+    slotOverrideEmojis: {},
+    aviatorImg: ''
+  });
+
+  // Load static admin settings from localstorage on mount as instant fallback
+  useEffect(() => {
+    const savedAdmin = localStorage.getItem('jw777_admin_settings');
+    if (savedAdmin) {
+      try {
+        setAdminSettings(JSON.parse(savedAdmin));
+      } catch (e) {}
+    }
+
+    // Subscribe to Firebase Live Firestore config Changes
+    try {
+      const db = getDb();
+      const configDocRef = doc(db, 'admin_settings', 'config');
+      
+      const unsubscribe = onSnapshot(configDocRef, (snapshot) => {
+        if (snapshot.exists()) {
+          const cloudData = snapshot.data() as AdminSettings;
+          setAdminSettings(cloudData);
+          localStorage.setItem('jw777_admin_settings', JSON.stringify(cloudData));
+        } else {
+          // Document does not exist yet. Initialize it lazily on Firebase!
+          const initialConfig: AdminSettings = {
+            adminId: 'ahirgaming',
+            adminPassword: '854336',
+            squareImages: true,
+            gameImages: {},
+            slotOverrideEmojis: {},
+            aviatorImg: ''
+          };
+          setDoc(configDocRef, initialConfig).catch(() => {});
+        }
+      }, (error) => {
+        console.warn("Firestore access error / Offline mode:", error);
+      });
+
+      return () => unsubscribe();
+    } catch (firebaseErr) {
+      console.warn("Firebase Init failed/offline:", firebaseErr);
+    }
+  }, []);
 
   // 1. Initial State Hydration on Mount
   useEffect(() => {
@@ -364,6 +417,25 @@ export const CasinoProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     localStorage.setItem(`jw777_settings_${currentUser}`, JSON.stringify(nextSettings));
   };
 
+  // Admin Settings
+  const updateAdminSettings = (newAdminSettings: Partial<AdminSettings>) => {
+    const nextAdminSettings = { ...adminSettings, ...newAdminSettings };
+    setAdminSettings(nextAdminSettings);
+    localStorage.setItem('jw777_admin_settings', JSON.stringify(nextAdminSettings));
+
+    // Update in Firestore
+    try {
+      const db = getDb();
+      const configDocRef = doc(db, 'admin_settings', 'config');
+      updateDoc(configDocRef, newAdminSettings).catch((err) => {
+        // Document might not be created yet, fallback to setDoc
+        setDoc(configDocRef, nextAdminSettings).catch(() => {});
+      });
+    } catch (e) {
+      console.warn("Firestore sync update dynamic error:", e);
+    }
+  };
+
   // Daily Bonus logic
   const claimDailyBonus = (): { amount: number; day: number } | null => {
     if (!currentUser) return null;
@@ -471,6 +543,13 @@ export const CasinoProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     setTransactions([]);
   };
 
+  const setCoinsExposed = (amount: number) => {
+    setCoins(amount);
+    if (currentUser) {
+      localStorage.setItem(`jw777_coins_${currentUser}`, amount.toString());
+    }
+  };
+
   return (
     <CasinoContext.Provider value={{
       currentUser,
@@ -482,6 +561,7 @@ export const CasinoProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       leaderboard,
       dailyBonus,
       hourlyBonus,
+      adminSettings,
       loginUser,
       registerUser,
       logoutUser,
@@ -489,12 +569,14 @@ export const CasinoProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       deductCoins,
       addGameLog,
       updateSettings,
+      updateAdminSettings,
       claimDailyBonus,
       claimHourlyBonus,
       resetAccount,
       clearAllData,
       getHourlyCooldown,
-      getDailyCooldown
+      getDailyCooldown,
+      setCoins: setCoinsExposed
     }}>
       {children}
     </CasinoContext.Provider>

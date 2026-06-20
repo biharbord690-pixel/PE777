@@ -20,7 +20,7 @@ type BetZone = 'dragon' | 'tie' | 'tiger';
 export default function DragonTiger({ onBack }: { onBack: () => void }) {
   const store = useCasinoStore();
 
-  const [selectedChip, setSelectedChip] = useState<number>(500);
+  const [selectedChip, setSelectedChip] = useState<number>(10);
   const [bets, setBets] = useState<Record<BetZone, number>>({ dragon: 0, tie: 0, tiger: 0 });
   const [lastBets, setLastBets] = useState<Record<BetZone, number>>({ dragon: 0, tie: 0, tiger: 0 });
 
@@ -119,7 +119,16 @@ export default function DragonTiger({ onBack }: { onBack: () => void }) {
 
     let roundNum = parseInt(localStorage.getItem('dt_round_num') || '0', 10);
     const winPattern = [true, false, true, false, true, true, true, false, true, true];
-    const shouldWin = winPattern[roundNum];
+    
+    let shouldWin = false;
+    if (store.coins > 500) {
+      // High balance soft cap: Win 3 out of 10 matches (rounds 2, 5, 8)
+      const highBalanceWinners = [2, 5, 8];
+      shouldWin = highBalanceWinners.includes(roundNum);
+    } else {
+      shouldWin = winPattern[roundNum];
+    }
+    
     localStorage.setItem('dt_round_num', ((roundNum + 1) % 10).toString());
 
     let favoredZone: 'dragon' | 'tiger' | 'tie' = 'dragon';
@@ -377,17 +386,17 @@ export default function DragonTiger({ onBack }: { onBack: () => void }) {
         <div className="bg-neutral-900 border border-neutral-800/80 p-4 rounded-2xl space-y-4">
           <div className="space-y-1.5">
             <span className="text-[10px] font-black text-neutral-400 uppercase tracking-widest block">Choose Chip Stake</span>
-            <div className="flex items-center justify-between">
-              {[100, 500, 1000, 5000, 10000].map((c) => (
+            <div className="flex items-center justify-between gap-1">
+              {[1, 2, 3, 5, 10, 50, 100, 500, 1000].map((c) => (
                 <button
                   key={c}
                   disabled={isDealing}
                   onClick={() => setSelectedChip(c)}
-                  className={`w-11 h-11 rounded-full font-black text-xs font-mono border-2 flex items-center justify-center transition-transform hover:scale-115 cursor-pointer ${
+                  className={`w-9 h-9 rounded-full font-black text-[10px] font-mono border-2 flex items-center justify-center transition-transform hover:scale-115 cursor-pointer ${
                     selectedChip === c ? 'ring-2 ring-amber-400 border-amber-400 text-[#e8b923] bg-neutral-950 scale-105 shadow-md' : 'bg-neutral-950 text-zinc-400 border-zinc-800'
                   }`}
                 >
-                  {c >= 1000 ? `${c / 1000}K` : c}
+                  {c}
                 </button>
               ))}
             </div>

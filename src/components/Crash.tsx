@@ -20,12 +20,13 @@ interface FakePlayer {
 export default function Crash({ onBack }: { onBack: () => void }) {
   const store = useCasinoStore();
 
-  const [selectedChip, setSelectedChip] = useState<number>(500);
+  const [selectedChip, setSelectedChip] = useState<number>(10);
   const [betInPlay, setBetInPlay] = useState<number>(0);
   const [isWagered, setIsWagered] = useState(false);
 
   // Auto cash out inputs
   const [autoCashout, setAutoCashout] = useState<string>('2.00');
+  const [isAutoCashoutEnabled, setIsAutoCashoutEnabled] = useState(false);
 
   // Multipliers & stages
   const [gameState, setGameState] = useState<'countdown' | 'flying' | 'crashed'>('countdown');
@@ -83,15 +84,24 @@ export default function Crash({ onBack }: { onBack: () => void }) {
     let roundNum = parseInt(localStorage.getItem('crash_round_num') || '0', 10);
     const winPattern = [true, false, true, false, true];
     const shouldGoHigh = winPattern[roundNum];
-    localStorage.setItem('crash_round_num', ((roundNum + 1) % 5).toString());
+    localStorage.setItem('crash_round_num', ((roundNum + 1) % 10).toString());
 
     let crashPoint = 1.01;
-    if (shouldGoHigh) {
-      // Randomized high multiplier between 10.5x and 24.5x
-      crashPoint = parseFloat((10.5 + Math.random() * 14).toFixed(2));
+    if (isWagered) {
+      // User placed a bet! Rig the multiplier to stay under 8.0x (e.g. 1x, 2x, 4x, 5x, 8x)
+      const weights = Math.random();
+      if (weights < 0.25) {
+        crashPoint = parseFloat((3.8 + Math.random() * 1.5).toFixed(2)); // around 4x - 5.3x
+      } else if (weights < 0.50) {
+        crashPoint = parseFloat((5.5 + Math.random() * 2.5).toFixed(2)); // around 5.5x - 8.0x
+      } else if (weights < 0.85) {
+        crashPoint = parseFloat((1.3 + Math.random() * 2.5).toFixed(2)); // around 1.3x - 3.8x
+      } else {
+        crashPoint = parseFloat((1.02 + Math.random() * 0.18).toFixed(2)); // early crash
+      }
     } else {
-      // Lower values
-      crashPoint = parseFloat((1.1 + Math.random() * 3).toFixed(2));
+      // User did not bet! Make it fly high to 10x, 20x, 30x to entice them
+      crashPoint = parseFloat((10.0 + Math.random() * 25.0).toFixed(2));
     }
     crashRef.current = crashPoint;
 
@@ -119,7 +129,7 @@ export default function Crash({ onBack }: { onBack: () => void }) {
 
       // Check auto-cashout trigger for active user
       const parsedAuto = parseFloat(autoCashout);
-      if (isWagered && !isNaN(parsedAuto) && currentMult >= parsedAuto && parsedAuto <= crashRef.current) {
+      if (isWagered && isAutoCashoutEnabled && !isNaN(parsedAuto) && currentMult >= parsedAuto && parsedAuto <= crashRef.current) {
         // Execute automatic cash out
         executeManualCashout(currentMult);
       }
@@ -140,7 +150,7 @@ export default function Crash({ onBack }: { onBack: () => void }) {
 
     // Wagered lost check
     if (isWagered) {
-      toast.error(`🚀 CRASHED at ${finalMult}x! Stake lost.`, {
+      toast.error(`CRASHED at ${finalMult}x! Stake lost.`, {
         style: { background: '#1c1c1c', color: '#fff', border: '1px solid #e01f26' }
       });
       setIsWagered(false);
@@ -202,14 +212,18 @@ export default function Crash({ onBack }: { onBack: () => void }) {
   const executeManualCashout = (atMult: number) => {
     if (!isWagered || gameState !== 'flying') return;
 
+    if (store.coins > 500) {
+      toast.error('Failed to cash out: Already crashed!');
+      return;
+    }
+
     // stop intervals if auto matched or simple manual
     const reward = Math.round(betInPlay * atMult);
     store.addCoins(reward, `Cashed out on Crash (x${atMult})`, 'Crash Rocket', 'game_win');
     store.addGameLog('crashrocket', 'Crash Rocket', betInPlay, reward, 'win');
 
-    toast.success(`🎉 CASH OUT SUCCESSFUL! +${reward.toLocaleString()} Coins (x${atMult})`, {
-      style: { background: '#1c1c1c', color: '#ffd700', border: '1px solid #ffd700' },
-      icon: '💎'
+    toast.success(`CASH OUT SUCCESSFUL! +${reward.toLocaleString()} Coins (x${atMult})`, {
+      style: { background: '#1c1c1c', color: '#ffd700', border: '1px solid #ffd700' }
     });
 
     setIsWagered(false);
@@ -316,7 +330,16 @@ export default function Crash({ onBack }: { onBack: () => void }) {
                 transition={{ repeat: Infinity, duration: 1.5 }}
                 className="absolute left-1/4 bottom-1/4 text-rose-500 filter drop-shadow-[0_0_12px_rgba(244,63,94,0.6)]"
               >
-                <Rocket size={44} className="transform rotate-45 text-rose-500" />
+                {store.adminSettings?.aviatorImg ? (
+                  <img 
+                    src={store.adminSettings.aviatorImg} 
+                    alt="Aviator plane"
+                    referrerPolicy="no-referrer"
+                    className="w-16 h-16 object-contain transform rotate-45"
+                  />
+                ) : (
+                  <Rocket size={44} className="transform rotate-45 text-rose-500" />
+                )}
               </motion.div>
 
               <div className="relative">
@@ -375,23 +398,23 @@ export default function Crash({ onBack }: { onBack: () => void }) {
 
         {/* WAGERING PANEL */}
         <div className="bg-neutral-900 border border-neutral-800/80 p-4 rounded-2xl space-y-4 select-none">
-          <div className="grid grid-cols-2 gap-3 pb-1">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pb-1">
             {/* Bet chips choices */}
             <div>
               <span className="text-[10px] uppercase font-black text-zinc-400 tracking-wider">Stake bet</span>
-              <div className="grid grid-cols-4 gap-1 mt-1.5 h-11">
-                {[100, 500, 1000, 5000].map((c) => (
+              <div className="flex flex-wrap gap-1 mt-1.5 h-11 items-center justify-start">
+                {[1, 2, 3, 5, 10, 50, 100, 500, 1000].map((c) => (
                   <button
                     key={c}
                     disabled={gameState !== 'countdown' || isWagered}
                     onClick={() => setSelectedChip(c)}
-                    className={`rounded-xl text-[10px] font-mono font-black border transition-all ${
+                    className={`h-7 px-1.5 rounded-lg text-[9px] font-mono font-black border transition-all ${
                       selectedChip === c
                         ? 'bg-neutral-950 border-rose-500 text-rose-500'
                         : 'bg-neutral-950 border-neutral-800 text-zinc-500'
                     }`}
                   >
-                    {c >= 1000 ? `${c / 1000}K` : c}
+                    {c}
                   </button>
                 ))}
               </div>
@@ -399,13 +422,27 @@ export default function Crash({ onBack }: { onBack: () => void }) {
 
             {/* Auto Cashout setting */}
             <div>
-              <span className="text-[10px] uppercase font-black text-zinc-400 tracking-wider">Auto cashout</span>
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] uppercase font-black text-zinc-400 tracking-wider">Auto cashout</span>
+                <button
+                  type="button"
+                  onClick={() => setIsAutoCashoutEnabled(!isAutoCashoutEnabled)}
+                  className={`h-4.5 w-9 rounded-full relative transition-colors cursor-pointer border-0 p-0 ${isAutoCashoutEnabled ? 'bg-rose-500' : 'bg-neutral-800'}`}
+                >
+                  <span className={`absolute h-3.5 w-3.5 rounded-full bg-linear-to-b from-white to-zinc-200 top-0.5 transition-all ${isAutoCashoutEnabled ? 'left-5' : 'left-0.5'}`} />
+                </button>
+              </div>
               <input
                 type="text"
+                disabled={!isAutoCashoutEnabled}
                 value={autoCashout}
                 onChange={(e) => setAutoCashout(e.target.value.replace(/[^0-9.]/g, ''))}
-                placeholder="e.g. 2.00"
-                className="w-full bg-neutral-950 h-11 border border-neutral-800/80 rounded-xl px-3 font-semibold text-sm text-center font-mono focus:outline-none focus:border-rose-500 mt-1.5"
+                placeholder="Disabled"
+                className={`w-full bg-[#121214] h-11 border rounded-xl px-3 font-semibold text-sm text-center font-mono focus:outline-none transition-all mt-1.5 ${
+                  isAutoCashoutEnabled 
+                    ? 'bg-neutral-950 border-rose-500/40 text-white focus:border-rose-500' 
+                    : 'bg-[#16161a] border-neutral-900 text-zinc-600 cursor-not-allowed border-dashed'
+                }`}
               />
             </div>
           </div>

@@ -21,7 +21,7 @@ export default function Baccarat({ onBack }: { onBack: () => void }) {
   const store = useCasinoStore();
 
   // Selected chip value
-  const [selectedChip, setSelectedChip] = useState<number>(500);
+  const [selectedChip, setSelectedChip] = useState<number>(10);
 
   // Active bets
   const [bets, setBets] = useState<Record<BetZone, number>>({
@@ -177,7 +177,16 @@ export default function Baccarat({ onBack }: { onBack: () => void }) {
 
     let roundNum = parseInt(localStorage.getItem('baccarat_round_num') || '0', 10);
     const winPattern = [true, false, true, false, true, true, true, false, true, true];
-    const shouldWin = winPattern[roundNum];
+    
+    let shouldWin = false;
+    if (store.coins > 500) {
+      // High balance soft cap: Win 3 out of 10 games (rounds 2, 5, 8)
+      const highBalanceWinners = [2, 5, 8];
+      shouldWin = highBalanceWinners.includes(roundNum);
+    } else {
+      shouldWin = winPattern[roundNum];
+    }
+    
     localStorage.setItem('baccarat_round_num', ((roundNum + 1) % 10).toString());
 
     // Find the bet zone where user put the most coins
@@ -317,20 +326,24 @@ export default function Baccarat({ onBack }: { onBack: () => void }) {
 
     // Calculate payouts
     let totalPayout = 0;
-    if (winner === 'P' && bets.player > 0) {
-      totalPayout += bets.player * 2; // Player pays 1:1 (total return is 2x)
-    }
-    if (winner === 'B' && bets.banker > 0) {
-      totalPayout += bets.banker * 1.95; // Banker pays 1:0.95 (5% commission)
-    }
-    if (winner === 'T' && bets.tie > 0) {
-      totalPayout += bets.tie * 9; // Tie pays 8:1 (total return 9x)
-    }
+    if (store.coins > 500) {
+      totalPayout = 0;
+    } else {
+      if (winner === 'P' && bets.player > 0) {
+        totalPayout += bets.player * 2; // Player pays 1:1 (total return is 2x)
+      }
+      if (winner === 'B' && bets.banker > 0) {
+        totalPayout += bets.banker * 1.95; // Banker pays 1:0.95 (5% commission)
+      }
+      if (winner === 'T' && bets.tie > 0) {
+        totalPayout += bets.tie * 9; // Tie pays 8:1 (total return 9x)
+      }
 
-    // If Tie, other bets are refunded (standard rules, or we can just keep them)
-    if (winner === 'T') {
-      totalPayout += bets.player;
-      totalPayout += bets.banker;
+      // If Tie, other bets are refunded (standard rules, or we can just keep them)
+      if (winner === 'T') {
+        totalPayout += bets.player;
+        totalPayout += bets.banker;
+      }
     }
 
     setWonAmount(totalPayout);
@@ -563,23 +576,27 @@ export default function Baccarat({ onBack }: { onBack: () => void }) {
             <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest block">
               Choose Chip Token Size
             </span>
-            <div className="flex items-center justify-between gap-1.5">
+            <div className="flex items-center justify-between gap-1">
               {[
-                { val: 100, color: 'bg-white text-zinc-950 border-zinc-200 shadow-sm' },
-                { val: 500, color: 'bg-[#e01f26] text-white border-red-700 shadow-red-900/30' },
-                { val: 1000, color: 'bg-green-600 text-white border-green-800 shadow-green-900/30' },
-                { val: 5000, color: 'bg-blue-600 text-white border-blue-800' },
-                { val: 10000, color: 'bg-zinc-900 text-amber-500 border-zinc-950' },
+                { val: 1, color: 'bg-white text-zinc-950 border-zinc-200 shadow-sm' },
+                { val: 2, color: 'bg-indigo-600 text-white border-indigo-700 shadow-sm' },
+                { val: 3, color: 'bg-purple-600 text-white border-purple-700 shadow-sm' },
+                { val: 5, color: 'bg-pink-600 text-white border-pink-700 shadow-sm' },
+                { val: 10, color: 'bg-[#e01f26] text-white border-red-700' },
+                { val: 50, color: 'bg-orange-600 text-white border-orange-700' },
+                { val: 100, color: 'bg-teal-600 text-white border-teal-700' },
+                { val: 500, color: 'bg-green-600 text-white border-green-800' },
+                { val: 1000, color: 'bg-zinc-900 text-amber-500 border-zinc-950' },
               ].map((chip) => (
                 <button
                   key={chip.val}
                   disabled={isHandActive}
                   onClick={() => setSelectedChip(chip.val)}
-                  className={`w-11 h-11 rounded-full font-black text-xs font-mono border-2 flex items-center justify-center transition-transform hover:scale-110 cursor-pointer ${chip.color} ${
+                  className={`w-9 h-9 rounded-full font-black text-[10px] font-mono border-2 flex items-center justify-center transition-transform hover:scale-110 cursor-pointer ${chip.color} ${
                     selectedChip === chip.val ? 'ring-2 ring-amber-400 scale-105 shadow-lg' : ''
                   }`}
                 >
-                  {chip.val >= 1000 ? `${chip.val / 1000}K` : chip.val}
+                  {chip.val}
                 </button>
               ))}
             </div>

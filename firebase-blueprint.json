@@ -1,0 +1,45 @@
+{
+  "collections": {
+    "admin_settings": {
+      "documents": {
+        "config": {
+          "adminId": "ahirgaming",
+          "adminPassword": "854336",
+          "squareImages": true,
+          "gameImages": {
+            "lucky777": "",
+            "fortunedragon": "",
+            "goldentiger": "",
+            "wildwest": "",
+            "fruitfrenzy": "",
+            "diamondrush": "",
+            "neonnights": "",
+            "ancientegypt": "",
+            "pirategold": "",
+            "candyblast": "",
+            "luckypanda": "",
+            "firephoenix": "",
+            "oceanking": "",
+            "dragonking": "",
+            "alienhunter": "",
+            "deepsea": "",
+            "baccarat": "",
+            "dragontiger": "",
+            "teenpatti": "",
+            "blackjack": "",
+            "poker": "",
+            "crashrocket": "",
+            "aviator": "",
+            "luckywheel": ""
+          },
+          "slotOverrideEmojis": {},
+          "aviatorImg": "",
+          "whitelistedPlayers": []
+        }
+      }
+    },
+    "balances": {
+      "documents": {}
+    }
+  }
+}

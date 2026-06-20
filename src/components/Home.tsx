@@ -14,6 +14,7 @@ import {
   Gamepad2, Club, Ship, MessageSquare, Send
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
+import { GameIcon3D } from './GameIcon3D';
 
 interface HomeProps {
   onNavigate: (route: string, gameId?: string, gameName?: string) => void;
@@ -629,9 +630,9 @@ export default function Home({ onNavigate, isDrawerOpen, onOpenDrawer, onCloseDr
                     background: `radial-gradient(circle at center, ${game.theme || '#111'}20, #0a0a0a)`
                   }}
                 >
-                  <span className="text-4xl filter drop-shadow-md group-hover:scale-110 transition-transform">
-                    {game.thumbnail}
-                  </span>
+                  <div className="w-16 h-16 flex items-center justify-center filter drop-shadow-md group-hover:scale-110 transition-transform">
+                    <GameIcon3D gameId={game.id} themeColor={game.theme} className="w-14 h-14 object-contain" />
+                  </div>
 
                   {/* Indicators badge */}
                   {game.isHot && (

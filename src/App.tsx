@@ -18,6 +18,8 @@ import DragonTiger from './components/DragonTiger';
 import TeenPatti from './components/TeenPatti';
 import Crash from './components/Crash';
 import Blackjack from './components/Blackjack';
+import LuckyWheel from './components/LuckyWheel';
+import AdminPanel from './components/AdminPanel';
 import { Toaster, toast } from 'react-hot-toast';
 import { Home as HomeIcon, Wallet, Bell, Gamepad2, User } from 'lucide-react';
 
@@ -135,6 +137,8 @@ function AppContent() {
         );
       case 'slots':
         return <Slots gameId={extraParam} gameName={extraName} onBack={() => window.location.hash = '#home'} />;
+      case 'luckywheel':
+        return <LuckyWheel onBack={() => window.location.hash = '#home'} />;
       case 'fish':
         return <Fish onBack={() => window.location.hash = '#home'} />;
       case 'baccarat':
@@ -149,6 +153,8 @@ function AppContent() {
         return <Blackjack onBack={() => window.location.hash = '#home'} />;
       case 'profile':
         return <BunniesProfile onBack={() => window.location.hash = '#home'} />;
+      case 'admin':
+        return <AdminPanel onBack={() => window.location.hash = '#home'} />;
       default:
         return (
           <BunniesDashboard
@@ -175,7 +181,7 @@ function AppContent() {
   const showBottomNav = currentPath !== 'splash' && currentPath !== 'login';
 
   return (
-    <div className="relative min-h-screen bg-black font-sans leading-none text-white overflow-x-hidden p-0 m-0">
+    <div className="relative min-h-screen bg-luxury-holographic font-sans leading-none text-white overflow-x-hidden p-0 m-0">
       <Toaster position="top-center" reverseOrder={false} />
 
       {/* Main Viewport */}
@@ -210,7 +216,7 @@ function AppContent() {
 
       {/* Floating Bottom Nav Rail bar strictly following Mobile First fintech standards */}
       {showBottomNav && (
-        <nav className="fixed bottom-0 inset-x-0 h-16 bg-[#09090a]/95 border-t border-zinc-950/80 flex items-center justify-around z-30 px-3 backdrop-blur-md select-none max-w-md mx-auto rounded-t-2xl shadow-2xl">
+        <nav className="fixed bottom-0 inset-x-0 h-16 bg-gradient-to-b from-[#180d32]/95 via-[#0d051a]/95 to-[#1a0c32]/95 border-t border-cyan-500/30 shadow-[0_-4px_20px_rgba(6,182,212,0.2)] flex items-center justify-around z-30 px-3 backdrop-blur-md select-none max-w-md mx-auto rounded-t-2xl">
           <button
             onClick={() => window.location.hash = '#home'}
             className="flex flex-col items-center gap-1.5 focus:outline-none flex-1 py-1 cursor-pointer"

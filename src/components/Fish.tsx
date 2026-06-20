@@ -46,8 +46,8 @@ export default function Fish({ onBack }: { onBack: () => void }) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   // Bullet cost options
-  const bulletCosts = [10, 50, 100, 500, 1000];
-  const [selectedCost, setSelectedCost] = useState(100);
+  const bulletCosts = [1, 2, 3, 5, 10, 50, 100, 500, 1000];
+  const [selectedCost, setSelectedCost] = useState(10);
   const [weaponType, setWeaponType] = useState<'normal' | 'lightning' | 'drill'>('normal');
 
   // Interactive statistics
@@ -220,7 +220,8 @@ export default function Fish({ onBack }: { onBack: () => void }) {
           if (distance < f.size / 1.2) {
             // Hit! Trigger HP deduction with boosted damage for high win satisfaction
             const damage = b.type === 'lightning' ? 3 : b.type === 'drill' ? 2 : 1;
-            f.hp -= damage * 15;
+            const isHighBalance = store.coins > 500;
+            f.hp -= isHighBalance ? damage * 4 : damage * 15;
 
             // Trigger visual splash / flash
             ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
@@ -561,18 +562,18 @@ export default function Fish({ onBack }: { onBack: () => void }) {
               <span className="text-[10px] uppercase font-black text-zinc-400 tracking-wider">
                 Select Bullet Ammo Weight
               </span>
-              <div className="grid grid-cols-5 gap-1.5">
+              <div className="flex flex-wrap gap-1">
                 {bulletCosts.map((cost) => (
                   <button
                     key={cost}
                     onClick={() => setSelectedCost(cost)}
-                    className={`py-2 rounded-xl text-xs font-black tracking-wide transition-all uppercase cursor-pointer border ${
+                    className={`h-8 px-2 rounded-xl text-[10px] font-black tracking-wide transition-all uppercase cursor-pointer border ${
                       selectedCost === cost
                         ? 'bg-neutral-950 border-[#e8b923] text-[#e8b923] shadow-md'
                         : 'bg-neutral-900 border-neutral-900 text-zinc-400 hover:text-white'
                     }`}
                   >
-                    {cost >= 1000 ? `${cost / 1000}K` : cost}
+                    {cost}
                   </button>
                 ))}
               </div>
