@@ -124,7 +124,9 @@ export const CasinoProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     squareImages: true,
     gameImages: {},
     slotOverrideEmojis: {},
-    aviatorImg: ''
+    aviatorImg: '',
+    loginMascotUrl: '',
+    loginLobbyBgUrl: ''
   });
 
   // Load static admin settings from localstorage on mount as instant fallback
@@ -154,7 +156,9 @@ export const CasinoProvider: React.FC<{ children: React.ReactNode }> = ({ childr
             squareImages: true,
             gameImages: {},
             slotOverrideEmojis: {},
-            aviatorImg: ''
+            aviatorImg: '',
+            loginMascotUrl: '',
+            loginLobbyBgUrl: ''
           };
           setDoc(configDocRef, initialConfig).catch(() => {});
         }

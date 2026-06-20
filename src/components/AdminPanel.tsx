@@ -23,6 +23,22 @@ export default function AdminPanel({ onBack }: { onBack: () => void }) {
   const [gameImages, setGameImages] = useState<Record<string, string>>({ ...store.adminSettings.gameImages });
   const [slotOverrideEmojis, setSlotOverrideEmojis] = useState<Record<string, string>>({ ...store.adminSettings.slotOverrideEmojis });
   const [aviatorImg, setAviatorImg] = useState(store.adminSettings.aviatorImg);
+  const [loginMascotUrl, setLoginMascotUrl] = useState(store.adminSettings.loginMascotUrl || '');
+  const [loginLobbyBgUrl, setLoginLobbyBgUrl] = useState(store.adminSettings.loginLobbyBgUrl || '');
+
+  // Synchronize deep state values when refreshed from Firebase onSnapshot live stream
+  React.useEffect(() => {
+    if (store.adminSettings) {
+      setAdminId(store.adminSettings.adminId || 'ahirgaming');
+      setAdminPassword(store.adminSettings.adminPassword || '854336');
+      setSquareImages(!!store.adminSettings.squareImages);
+      setGameImages({ ...store.adminSettings.gameImages });
+      setSlotOverrideEmojis({ ...store.adminSettings.slotOverrideEmojis });
+      setAviatorImg(store.adminSettings.aviatorImg || '');
+      setLoginMascotUrl(store.adminSettings.loginMascotUrl || '');
+      setLoginLobbyBgUrl(store.adminSettings.loginLobbyBgUrl || '');
+    }
+  }, [store.adminSettings]);
 
   // Slot symbol pool options to edit
   const SLOT_EMOJI_POOL = ['🐉', '🐯', '🍒', '🔔', '⭐', '💎', 'BAR', '7️⃣', '⚡', '🎴', '🔮', '🪙', '💰', '🏮', '🎋', '👑', '🌸', '🌵', '🐎', '🔫', '🤠', '🍋', '🍊', '🍇', '🍉', '💠', '🌟', '💍', '✨', '🚀', '🔮', '🏺', '🏴‍☠️', '🐼', '🔥', '🦜', '⚓', '⚔️', '🍩', '🍫', '🧁', '🍭', '🍬'];
@@ -50,7 +66,9 @@ export default function AdminPanel({ onBack }: { onBack: () => void }) {
       squareImages,
       gameImages,
       slotOverrideEmojis,
-      aviatorImg
+      aviatorImg,
+      loginMascotUrl,
+      loginLobbyBgUrl
     });
 
     toast.success('सभी सेटिंग्स फायरबेस और क्लाउड डेटाबेस पर सफलतापूर्वक सहेज दी गई हैं! 🔥🚀', {
@@ -429,6 +447,46 @@ export default function AdminPanel({ onBack }: { onBack: () => void }) {
                 {aviatorImg && (
                   <div className="mt-2 w-16 h-16 bg-[#0c0a1a] rounded-xl flex items-center justify-center p-1.5 border border-white/10 border-dashed">
                     <img src={aviatorImg} alt="aviator preview" className="max-w-full max-h-full object-contain" referrerPolicy="no-referrer" />
+                  </div>
+                )}
+              </div>
+
+              {/* Login Mascot Logo image input panel */}
+              <div className="p-3 bg-zinc-900/40 rounded-2xl border border-white/5 space-y-2">
+                <div>
+                  <span className="text-xs font-black text-white block uppercase tracking-wide">लॉगिन गोल मैस्कॉट लोगो (Login Mascot Logo URL)</span>
+                  <span className="text-[9.5px] text-zinc-500 font-medium block mt-0.5 leading-none">लॉगिन पेज पर दिखने वाला गोल मैस्कॉट कार्टून/लोगो</span>
+                </div>
+                <input
+                  type="text"
+                  value={loginMascotUrl}
+                  onChange={(e) => setLoginMascotUrl(e.target.value)}
+                  placeholder="उदा. https://image.png (खाली छोड़ने पर डिफ़ॉल्ट मैस्कॉट दिखेगा)"
+                  className="w-full bg-slate-950/80 border border-white/5 rounded-xl py-2 px-3 text-[10px] font-mono text-zinc-300 outline-none focus:border-pink-500"
+                />
+                {loginMascotUrl && (
+                  <div className="mt-2 w-16 h-16 bg-[#0c0a1a] rounded-xl flex items-center justify-center p-1.5 border border-white/10 border-dashed">
+                    <img src={loginMascotUrl} alt="mascot preview" className="max-w-full max-h-full object-contain rounded-full" referrerPolicy="no-referrer" />
+                  </div>
+                )}
+              </div>
+
+              {/* Login/Splash Lobby Background image input panel */}
+              <div className="p-3 bg-zinc-900/40 rounded-2xl border border-white/5 space-y-2">
+                <div>
+                  <span className="text-xs font-black text-white block uppercase tracking-wide">लॉगिन/स्प्लैश बैकग्राउंड (Lobby Background URL)</span>
+                  <span className="text-[9.5px] text-zinc-500 font-medium block mt-0.5 leading-none">लॉबी और लॉगिन पृष्ठ की मुख्य पृष्ठभूमि इमेज चित्र</span>
+                </div>
+                <input
+                  type="text"
+                  value={loginLobbyBgUrl}
+                  onChange={(e) => setLoginLobbyBgUrl(e.target.value)}
+                  placeholder="उदा. https://image.png (खाली छोड़ने पर डिफ़ॉल्ट लॉबी चित्र दिखेगा)"
+                  className="w-full bg-slate-950/80 border border-white/5 rounded-xl py-2 px-3 text-[10px] font-mono text-zinc-300 outline-none focus:border-pink-500"
+                />
+                {loginLobbyBgUrl && (
+                  <div className="mt-2 h-16 w-28 bg-[#0c0a1a] rounded-xl flex items-center justify-center p-1.5 border border-white/10 border-dashed">
+                    <img src={loginLobbyBgUrl} alt="lobby bg preview" className="max-w-full max-h-full object-cover rounded-lg" referrerPolicy="no-referrer" />
                   </div>
                 )}
               </div>

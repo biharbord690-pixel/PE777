@@ -16,6 +16,7 @@ import {
 import { toast } from 'react-hot-toast';
 import { GameIcon3D } from './GameIcon3D';
 import lobbyImg from '../assets/images/pe777_slots_lobby_1781925818795.jpg';
+import defaultMascot from '../assets/images/bunny_luxury_mascot_1781800135949.jpg';
 
 interface BunniesDashboardProps {
   onNavigate: (path: string) => void;
@@ -205,7 +206,7 @@ export default function BunniesDashboard({
         <div className="flex items-center gap-2.5">
           <div className="w-9 h-9 rounded-full border-2 border-[#e8b923] p-0.5 bg-gradient-to-tr from-neutral-900 via-purple-950 to-neutral-850 overflow-hidden shrink-0 shadow-[0_0_10px_rgba(232,185,35,0.4)]">
             <img 
-              src={lobbyImg}
+              src={store.adminSettings?.loginMascotUrl || defaultMascot}
               alt="PE777 Slots"
               referrerPolicy="no-referrer"
               className="w-full h-full object-cover rounded-full"

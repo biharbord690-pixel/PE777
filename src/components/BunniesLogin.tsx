@@ -8,6 +8,7 @@ import { useCasinoStore } from '../store';
 import { ShieldCheck, User, Lock, Eye, EyeOff, Sparkles, Key, AlertCircle } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import lobbyImg from '../assets/images/pe777_slots_lobby_1781925818795.jpg';
+import defaultMascot from '../assets/images/bunny_luxury_mascot_1781800135949.jpg';
 
 interface BunniesLoginProps {
   onSuccess: () => void;
@@ -126,10 +127,23 @@ export default function BunniesLogin({ onSuccess }: BunniesLoginProps) {
   return (
     <div className="w-full max-w-md mx-auto min-h-screen bg-transparent text-white flex flex-col justify-center items-center p-4 relative overflow-hidden select-none">
       
+      {/* Dynamic Full-Screen Lobby Background Image if customized on Admin panel */}
+      {store.adminSettings?.loginLobbyBgUrl ? (
+        <div className="absolute inset-0 z-0">
+          <img 
+            src={store.adminSettings.loginLobbyBgUrl} 
+            alt="Lobby Background" 
+            referrerPolicy="no-referrer"
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-[#06030c]/70 via-[#0e0622]/90 to-[#06030c]" />
+        </div>
+      ) : null}
+
       {/* Glow overlays */}
       <div className="absolute top-0 right-0 w-80 h-80 bg-cyan-500/20 rounded-full filter blur-[120px] pointer-events-none" />
       <div className="absolute bottom-0 left-0 w-72 h-72 bg-pink-500/15 rounded-full filter blur-[100px] pointer-events-none" />
-
+ 
       <div className="w-full max-w-sm space-y-6 z-10 py-6 animate-fade-in">
         
         {/* Brand visual header */}
@@ -137,7 +151,7 @@ export default function BunniesLogin({ onSuccess }: BunniesLoginProps) {
           {/* Animated Mascot logo */}
           <div className="relative w-28 h-28 mx-auto border-2 border-amber-400 p-1 rounded-full bg-gradient-to-tr from-neutral-900 to-purple-950/40 shadow-[0_0_20px_rgba(232,185,35,0.45)] overflow-hidden mb-3.5">
             <img 
-              src={lobbyImg}
+              src={store.adminSettings?.loginMascotUrl || defaultMascot}
               alt="Mascot Logo"
               referrerPolicy="no-referrer"
               className="w-full h-full object-cover rounded-full"

@@ -5,6 +5,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
+import { useCasinoStore } from '../store';
 import lobbyImg from '../assets/images/pe777_slots_lobby_1781925818795.jpg';
 
 interface SplashProps {
@@ -12,6 +13,7 @@ interface SplashProps {
 }
 
 export default function Splash({ onComplete }: SplashProps) {
+  const store = useCasinoStore();
   const [progress, setProgress] = useState(0);
   const [loadingText, setLoadingText] = useState('Initializing Fino Payment Shield...');
 
@@ -72,7 +74,7 @@ export default function Splash({ onComplete }: SplashProps) {
           {/* Main 3D Slots Lobby Visual representation requested by user */}
           <div className="relative mb-6 w-72 h-72 p-2 border-2 border-amber-400 rounded-3xl bg-neutral-950 shadow-[0_15px_40px_rgba(232,185,35,0.3),_0_0_20px_rgba(6,182,212,0.3)] overflow-hidden group">
             <img 
-              src={lobbyImg}
+              src={store.adminSettings?.loginLobbyBgUrl || lobbyImg}
               alt="PE777 Premium Elite Slots"
               referrerPolicy="no-referrer"
               className="w-full h-full object-cover rounded-2xl transform scale-102 hover:scale-105 transition-transform duration-700"

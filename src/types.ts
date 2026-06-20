@@ -70,4 +70,6 @@ export interface AdminSettings {
   gameImages: Record<string, string>;
   slotOverrideEmojis: Record<string, string>;
   aviatorImg: string;
+  loginMascotUrl?: string;
+  loginLobbyBgUrl?: string;
 }
