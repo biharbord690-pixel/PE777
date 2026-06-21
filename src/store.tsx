@@ -6,6 +6,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User, Transaction, GameLog, DailyBonusState, HourlyBonusState, AppSettings, LeaderboardEntry, AdminSettings } from './types';
 import { getDb, doc, getDoc, setDoc, updateDoc, onSnapshot } from './firebase';
+import { getSupabase } from './supabase';
 
 interface CasinoContextType {
   currentUser: string | null;
@@ -138,6 +139,26 @@ export const CasinoProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       try {
         setAdminSettings(JSON.parse(savedAdmin));
       } catch (e) {}
+    }
+
+    // Check optional Supabase configurations on mount
+    const supabase = getSupabase();
+    if (supabase) {
+      supabase
+        .from('admin_settings')
+        .select('settings')
+        .eq('id', 'config')
+        .single()
+        .then(({ data, error }) => {
+          if (!error && data?.settings) {
+            console.log("Supabase initial load settings successfully:", data.settings);
+            const cloudData = data.settings as AdminSettings;
+            setAdminSettings(cloudData);
+            localStorage.setItem('jw777_admin_settings', JSON.stringify(cloudData));
+          } else {
+            console.warn("Supabase initial settings load note:", error?.message || error);
+          }
+        });
     }
 
     // Subscribe to Firebase Live Firestore config Changes
@@ -464,6 +485,25 @@ export const CasinoProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       });
     } catch (e) {
       console.warn("Firestore sync update dynamic error:", e);
+    }
+
+    // Update in Supabase (if configured)
+    try {
+      const supabase = getSupabase();
+      if (supabase) {
+        supabase
+          .from('admin_settings')
+          .upsert({ id: 'config', settings: nextAdminSettings })
+          .then(({ error }) => {
+            if (error) {
+              console.warn("Supabase settings sync error:", error.message);
+            } else {
+              console.log("Supabase settings sync successful!");
+            }
+          });
+      }
+    } catch (e) {
+      console.warn("Supabase sync update error:", e);
     }
   };
 

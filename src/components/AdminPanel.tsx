@@ -5,8 +5,9 @@
 
 import React, { useState } from 'react';
 import { useCasinoStore } from '../store';
-import { ArrowLeft, Save, Lock, ShieldCheck, Image, HelpCircle, Eye, EyeOff, LayoutGrid, Sparkles, Orbit, KeyRound } from 'lucide-react';
+import { ArrowLeft, Save, Lock, ShieldCheck, Image, HelpCircle, Eye, EyeOff, LayoutGrid, Sparkles, Orbit, KeyRound, Database, Check, Copy } from 'lucide-react';
 import { toast } from 'react-hot-toast';
+import { getSupabase } from '../supabase';
 
 // Reusable Image upload & URL Selector helper component
 const ImageUploadInput = ({
@@ -55,8 +56,13 @@ const ImageUploadInput = ({
         const ctx = canvas.getContext('2d');
         if (ctx) {
           ctx.drawImage(imgObj, 0, 0, width, height);
-          // converting to PNG preserves full high-fidelity sharpness and transparency!
-          const compressedBase64 = canvas.toDataURL('image/png');
+          
+          // Use high quality Webp/Jpeg compression to keep files crisp & bright while 10x lighter than raw PNG
+          let compressedBase64 = canvas.toDataURL('image/webp', 0.90);
+          if (!compressedBase64.startsWith('data:image/webp')) {
+            compressedBase64 = canvas.toDataURL('image/jpeg', 0.90);
+          }
+          
           onChange(compressedBase64);
           toast.success('छवि गैलरी से लोड और सुरक्षित रूप से सहेज ली गई है! ✨', { id: loadingToast });
         }
@@ -137,6 +143,75 @@ export default function AdminPanel({ onBack }: { onBack: () => void }) {
   const [aviatorImg, setAviatorImg] = useState(store.adminSettings.aviatorImg);
   const [loginMascotUrl, setLoginMascotUrl] = useState(store.adminSettings.loginMascotUrl || '');
   const [loginLobbyBgUrl, setLoginLobbyBgUrl] = useState(store.adminSettings.loginLobbyBgUrl || '');
+
+  // Supabase states for integration checks
+  const [copiedSql, setCopiedSql] = useState(false);
+  const [supabaseStatus, setSupabaseStatus] = useState<'idle' | 'checking' | 'success' | 'table-missing' | 'error'>('idle');
+  const [supabaseErrorMsg, setSupabaseErrorMsg] = useState('');
+
+  const handleTestSupabase = async () => {
+    const supabaseClient = getSupabase();
+    if (!supabaseClient) {
+      toast.error('Supabase credentials not found. Ensure VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are set in settings!');
+      setSupabaseStatus('error');
+      setSupabaseErrorMsg('Supabase is not configured yet. Add variables to Settings.');
+      return;
+    }
+
+    setSupabaseStatus('checking');
+    const checkToast = toast.loading('Testing Supabase Connection...');
+
+    try {
+      // Direct call to query table
+      const { data, error } = await supabaseClient.from('admin_settings').select('settings').eq('id', 'config').maybeSingle();
+      
+      if (error) {
+        // Table missing or other database error
+        if (error.code === 'PGRST116' || error.code === 'PGRST205' || error.message?.includes('does not exist')) {
+          setSupabaseStatus('table-missing');
+          setSupabaseErrorMsg('admin_settings table not created yet. Please execute the SQL below in Supabase SQL Editor!');
+          toast.error('Supabase connected, but database table is missing.', { id: checkToast });
+        } else {
+          setSupabaseStatus('error');
+          setSupabaseErrorMsg(error.message);
+          toast.error(`Error: ${error.message}`, { id: checkToast });
+        }
+      } else {
+        // Successful connection! Let's save/upsert the current state as backup
+        const currentData = {
+          adminId,
+          adminPassword,
+          squareImages,
+          gameImages,
+          slotOverrideEmojis,
+          aviatorImg,
+          loginMascotUrl,
+          loginLobbyBgUrl
+        };
+        const { error: upsertError } = await supabaseClient.from('admin_settings').upsert({ id: 'config', settings: currentData });
+        if (upsertError) {
+          setSupabaseStatus('error');
+          setSupabaseErrorMsg(`Connected but could not write configuration: ${upsertError.message}`);
+          toast.error('Write authorization failed. Check your row-level security (RLS).', { id: checkToast });
+        } else {
+          setSupabaseStatus('success');
+          toast.success('Supabase is connected & live-syncing! 🎉', { id: checkToast });
+        }
+      }
+    } catch (err: any) {
+      // PGRST205 or similar Table not found
+      const msg = err?.message || '';
+      if (msg.includes('relation "public.admin_settings" does not exist') || msg.includes('404') || msg.includes('schema cache')) {
+        setSupabaseStatus('table-missing');
+        setSupabaseErrorMsg('admin_settings table not created yet. Please run the SQL below in Supabase Console!');
+        toast.error('Supabase connected, but table not found.', { id: checkToast });
+      } else {
+        setSupabaseStatus('error');
+        setSupabaseErrorMsg(err.message || 'Unknown network error');
+        toast.error('Supabase connection failed!', { id: checkToast });
+      }
+    }
+  };
 
   // Synchronize deep state values when refreshed from Firebase onSnapshot live stream
   React.useEffect(() => {
@@ -647,6 +722,114 @@ export default function AdminPanel({ onBack }: { onBack: () => void }) {
                   />
                 </div>
               </div>
+            </div>
+
+            {/* Supabase Database Settings Section */}
+            <div className="bg-neutral-950 border border-neutral-900 rounded-3xl p-4 space-y-4 text-left">
+              <div className="flex items-center gap-2 border-b border-neutral-900 pb-2">
+                <Database className="text-emerald-400 animate-pulse" size={16} />
+                <span className="text-[11px] font-black uppercase text-white tracking-wider">
+                  Supabase डेटाबेस सेटअप (Vercel & Live Backup)
+                </span>
+              </div>
+
+              <p className="text-[10.5px] text-zinc-400 leading-relaxed font-medium">
+                Vercel या अन्य सर्वर पर इमेज और ओवेरराइड्स को हमेशा चालू रखने के लिए Supabase का उपयोग करें। यह आपके डेटा को लाइव रखता है।
+              </p>
+
+              <div className="p-3 bg-zinc-900/40 rounded-xl border border-white/5 space-y-2 text-xs">
+                <div className="flex justify-between items-center">
+                  <span className="text-zinc-500 font-bold uppercase tracking-wide text-[9.5px]">SUPABASE_URL STATUS:</span>
+                  {import.meta.env.VITE_SUPABASE_URL ? (
+                    <span className="text-[10px] bg-emerald-500/10 text-emerald-400 font-mono font-bold px-2 py-0.5 rounded border border-emerald-500/10">
+                      लॉन्च है (Configured)
+                    </span>
+                  ) : (
+                    <span className="text-[10px] bg-amber-500/10 text-amber-500 font-mono font-bold px-2 py-0.5 rounded border border-amber-500/10">
+                      गैस है (Missing)
+                    </span>
+                  )}
+                </div>
+
+                <div className="flex justify-between items-center">
+                  <span className="text-zinc-500 font-bold uppercase tracking-wide text-[9.5px]">ANON_KEY STATUS:</span>
+                  {import.meta.env.VITE_SUPABASE_ANON_KEY ? (
+                    <span className="text-[10px] bg-emerald-500/10 text-emerald-400 font-mono font-semibold px-2 py-0.5 rounded border border-emerald-500/10 flex items-center gap-1">
+                      <ShieldCheck size={10} /> Active
+                    </span>
+                  ) : (
+                    <span className="text-[10px] bg-amber-500/10 text-amber-500 font-mono font-bold px-2 py-0.5 rounded border border-amber-500/10">
+                      गायब है (Missing)
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleTestSupabase}
+                disabled={supabaseStatus === 'checking'}
+                className="w-full bg-[#10b981] hover:bg-[#059669] transition-all text-white font-bold py-2.5 px-4 rounded-xl text-xs flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-emerald-950/20 active:scale-[0.98] disabled:opacity-50"
+              >
+                <Database size={14} />
+                {supabaseStatus === 'checking' ? 'चेक किया जा रहा है...' : 'डेटाबेस चेक करें और सिंक्रोनाइज़ करें'}
+              </button>
+
+              {supabaseStatus === 'success' && (
+                <div className="p-3 bg-emerald-500/10 text-emerald-400 text-[10px] rounded-xl border border-emerald-500/20 font-bold text-center">
+                  ✅ आपका Supabase बिल्कुल सही काम कर रहा है और सुरक्षित है! सभी फोटो और सेटिंग्स वहां सिंक हो गई हैं।
+                </div>
+              )}
+
+              {supabaseStatus === 'error' && (
+                <div className="p-3 bg-rose-500/10 text-rose-400 text-[10px] rounded-xl border border-rose-500/20 font-semibold leading-relaxed">
+                  ❌ एरर: {supabaseErrorMsg}. <br />
+                  कृपया एडमिन सेटिंग्स (Secret keys) में जाके अपनी Supabase URL और API ANON-Key जांचें।
+                </div>
+              )}
+
+              {(supabaseStatus === 'table-missing' || supabaseStatus === 'idle' || supabaseStatus === 'error') && (
+                <div className="mt-2 space-y-2">
+                  <div className="p-3 bg-rose-500/10 text-rose-400 text-[10.5px] rounded-xl border border-rose-500/20 leading-relaxed font-bold">
+                    ⚠️ <b>RLS Policy Error Solution:</b> Supabase का RLS पॉलिसी एरर ठीक करने के लिए नीचे दिए गए पूरे SQL कोड को फिर से कॉपी करें और अपने <a href="https://supabase.com" target="_blank" rel="noreferrer" className="underline font-black">Supabase SQL Editor</a> में चलाएं:
+                  </div>
+
+                  <div className="bg-neutral-900 border border-white/5 rounded-xl p-3 relative font-mono text-[9px] text-zinc-300 select-all overflow-x-auto whitespace-pre leading-normal max-h-40">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const sqlCode = `-- 1. Create admin_settings table if not exists\nCREATE TABLE IF NOT EXISTS admin_settings (\n  id varchar PRIMARY KEY DEFAULT 'config',\n  settings jsonb NOT NULL,\n  updated_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL\n);\n\n-- 2. Turn off Row Level Security (RLS) permanently to allow simple app config\nALTER TABLE admin_settings DISABLE ROW LEVEL SECURITY;\n\n-- 3. Fallback policy if RLS remains active\nDROP POLICY IF EXISTS "Allow public read and write" ON admin_settings;\nCREATE POLICY "Allow public read and write" ON admin_settings\n  FOR ALL TO public USING (true) WITH CHECK (true);\n\n-- 4. Insert initial config\nINSERT INTO admin_settings (id, settings) \nVALUES ('config', '{"squareImages": true, "gameImages": {}, "slotOverrideEmojis": {}}'::jsonb)\nON CONFLICT (id) DO NOTHING;`;
+                        navigator.clipboard.writeText(sqlCode);
+                        setCopiedSql(true);
+                        toast.success('SQL कोड कॉपी हो गया! Supabase में पेस्ट करें।');
+                        setTimeout(() => setCopiedSql(false), 2000);
+                      }}
+                      className="absolute right-2 top-2 bg-neutral-800 hover:bg-neutral-700 p-1.5 rounded-lg text-white transition-all cursor-pointer"
+                    >
+                      {copiedSql ? <Check size={12} className="text-emerald-400" /> : <Copy size={12} />}
+                    </button>
+                    {`-- 1. Create admin_settings table if not exists
+CREATE TABLE IF NOT EXISTS admin_settings (
+  id varchar PRIMARY KEY DEFAULT 'config',
+  settings jsonb NOT NULL,
+  updated_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- 2. Turn off Row Level Security (RLS) permanently to allow simple app config
+ALTER TABLE admin_settings DISABLE ROW LEVEL SECURITY;
+
+-- 3. Fallback policy if RLS remains active
+DROP POLICY IF EXISTS "Allow public read and write" ON admin_settings;
+CREATE POLICY "Allow public read and write" ON admin_settings
+  FOR ALL TO public USING (true) WITH CHECK (true);
+
+-- 4. Insert initial config
+INSERT INTO admin_settings (id, settings) 
+VALUES ('config', '{"squareImages": true, "gameImages": {}, "slotOverrideEmojis": {}}'::jsonb)
+ON CONFLICT (id) DO NOTHING;`}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         )}
