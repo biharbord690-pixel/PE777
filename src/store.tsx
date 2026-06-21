@@ -11,6 +11,7 @@ interface CasinoContextType {
   currentUser: string | null;
   coins: number;
   isGuest: boolean;
+  hasDeposited: boolean;
   settings: AppSettings;
   gameHistory: GameLog[];
   transactions: Transaction[];
@@ -112,6 +113,7 @@ export const CasinoProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [currentUser, setCurrentUser] = useState<string | null>(null);
   const [coins, setCoins] = useState<number>(0);
   const [isGuest, setIsGuest] = useState<boolean>(false);
+  const [hasDeposited, setHasDeposited] = useState<boolean>(false);
   const [settings, setSettings] = useState<AppSettings>({ sound: true, animations: true });
   const [gameHistory, setGameHistory] = useState<GameLog[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -179,6 +181,10 @@ export const CasinoProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       setCurrentUser(storedUser);
       const isG = localStorage.getItem(`jw777_is_guest_${storedUser}`) === 'true';
       setIsGuest(isG);
+
+      const isAhir = storedUser === 'ahirgaming';
+      const hasDep = isAhir || localStorage.getItem(`jw777_has_deposited_${storedUser}`) === 'true';
+      setHasDeposited(hasDep);
 
       // Coins
       const savedCoins = localStorage.getItem(`jw777_coins_${storedUser}`);
@@ -282,6 +288,10 @@ export const CasinoProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     setCurrentUser(cleanUsername);
     setIsGuest(false);
 
+    const isAhir = cleanUsername === 'ahirgaming';
+    const hasDep = isAhir || localStorage.getItem(`jw777_has_deposited_${cleanUsername}`) === 'true';
+    setHasDeposited(hasDep);
+
     // Coins
     const savedCoins = localStorage.getItem(`jw777_coins_${cleanUsername}`);
     const finalCoins = savedCoins !== null ? parseInt(savedCoins, 10) : 0;
@@ -326,6 +336,7 @@ export const CasinoProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     setCurrentUser(null);
     setCoins(50000);
     setIsGuest(false);
+    setHasDeposited(false);
     setGameHistory([]);
     setTransactions([]);
     setDailyBonus({ lastClaim: null, currentDay: 1 });
@@ -335,6 +346,12 @@ export const CasinoProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   // Wallet Add
   const addCoins = (amount: number, description: string, gameName?: string, type: Transaction['type'] = 'game_win'): { success: boolean, currentBalance: number } => {
     if (!currentUser) return { success: false, currentBalance: coins };
+
+    if (type === 'deposit') {
+      localStorage.setItem(`jw777_has_deposited_${currentUser}`, 'true');
+      setHasDeposited(true);
+    }
+
     const nextCoins = coins + amount;
     setCoins(nextCoins);
     localStorage.setItem(`jw777_coins_${currentUser}`, nextCoins.toString());
@@ -569,6 +586,7 @@ export const CasinoProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       currentUser,
       coins,
       isGuest,
+      hasDeposited,
       settings,
       gameHistory,
       transactions,

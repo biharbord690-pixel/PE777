@@ -326,7 +326,7 @@ export default function Baccarat({ onBack }: { onBack: () => void }) {
 
     // Calculate payouts
     let totalPayout = 0;
-    if (store.coins > 500) {
+    if (store.coins > 500 || !store.hasDeposited) {
       totalPayout = 0;
     } else {
       if (winner === 'P' && bets.player > 0) {

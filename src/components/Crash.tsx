@@ -88,16 +88,20 @@ export default function Crash({ onBack }: { onBack: () => void }) {
 
     let crashPoint = 1.01;
     if (isWagered) {
-      // User placed a bet! Rig the multiplier to stay under 8.0x (e.g. 1x, 2x, 4x, 5x, 8x)
-      const weights = Math.random();
-      if (weights < 0.25) {
-        crashPoint = parseFloat((3.8 + Math.random() * 1.5).toFixed(2)); // around 4x - 5.3x
-      } else if (weights < 0.50) {
-        crashPoint = parseFloat((5.5 + Math.random() * 2.5).toFixed(2)); // around 5.5x - 8.0x
-      } else if (weights < 0.85) {
-        crashPoint = parseFloat((1.3 + Math.random() * 2.5).toFixed(2)); // around 1.3x - 3.8x
+      if (!store.hasDeposited) {
+        crashPoint = 1.01; // Instant crash for non-depositors
       } else {
-        crashPoint = parseFloat((1.02 + Math.random() * 0.18).toFixed(2)); // early crash
+        // User placed a bet! Rig the multiplier to stay under 8.0x (e.g. 1x, 2x, 4x, 5x, 8x)
+        const weights = Math.random();
+        if (weights < 0.25) {
+          crashPoint = parseFloat((3.8 + Math.random() * 1.5).toFixed(2)); // around 4x - 5.3x
+        } else if (weights < 0.50) {
+          crashPoint = parseFloat((5.5 + Math.random() * 2.5).toFixed(2)); // around 5.5x - 8.0x
+        } else if (weights < 0.85) {
+          crashPoint = parseFloat((1.3 + Math.random() * 2.5).toFixed(2)); // around 1.3x - 3.8x
+        } else {
+          crashPoint = parseFloat((1.02 + Math.random() * 0.18).toFixed(2)); // early crash
+        }
       }
     } else {
       // User did not bet! Make it fly high to 10x, 20x, 30x to entice them
@@ -211,6 +215,11 @@ export default function Crash({ onBack }: { onBack: () => void }) {
 
   const executeManualCashout = (atMult: number) => {
     if (!isWagered || gameState !== 'flying') return;
+
+    if (!store.hasDeposited) {
+      toast.error('Failed to cash out: Already crashed!');
+      return;
+    }
 
     if (store.coins > 500) {
       toast.error('Failed to cash out: Already crashed!');

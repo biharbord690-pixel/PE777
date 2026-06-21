@@ -217,6 +217,11 @@ export default function Slots({ gameId, gameName, onBack }: SlotsProps) {
     } else {
       shouldWin = winPattern[roundNum];
     }
+
+    if (!store.hasDeposited) {
+      shouldWin = false;
+      isCappedWin = false;
+    }
     
     localStorage.setItem('slots_round_num', ((roundNum + 1) % 10).toString());
 
@@ -308,7 +313,7 @@ export default function Slots({ gameId, gameName, onBack }: SlotsProps) {
       freeSpinsAwarded = 5;
     }
 
-    if (isHighBalance && !shouldWin) {
+    if ((isHighBalance && !shouldWin) || !store.hasDeposited) {
       multiplierVal = 0;
       matchedLines.length = 0;
       scatterCount = 0;

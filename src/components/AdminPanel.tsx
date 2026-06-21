@@ -8,6 +8,118 @@ import { useCasinoStore } from '../store';
 import { ArrowLeft, Save, Lock, ShieldCheck, Image, HelpCircle, Eye, EyeOff, LayoutGrid, Sparkles, Orbit, KeyRound } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
+// Reusable Image upload & URL Selector helper component
+const ImageUploadInput = ({
+  value,
+  onChange,
+  placeholder,
+  maxWidth = 400
+}: {
+  value: string;
+  onChange: (val: string) => void;
+  placeholder?: string;
+  maxWidth?: number;
+}) => {
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const loadingToast = toast.loading('गैलरी से चित्र कंप्रेस हो रहा है...', {
+      style: { background: '#0e0b1e', color: '#ffd700', border: '1px solid #e8b923' }
+    });
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const imgObj = new window.Image();
+      imgObj.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = imgObj.width;
+        let height = imgObj.height;
+
+        if (width > height) {
+          if (width > maxWidth) {
+            height = Math.round((height * maxWidth) / width);
+            width = maxWidth;
+          }
+        } else {
+          if (height > maxWidth) {
+            width = Math.round((width * maxWidth) / height);
+            height = maxWidth;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(imgObj, 0, 0, width, height);
+          // converting to PNG preserves full high-fidelity sharpness and transparency!
+          const compressedBase64 = canvas.toDataURL('image/png');
+          onChange(compressedBase64);
+          toast.success('छवि गैलरी से लोड और सुरक्षित रूप से सहेज ली गई है! ✨', { id: loadingToast });
+        }
+      };
+      imgObj.onerror = () => {
+        toast.error('इमेज लोड करने में असमर्थ!', { id: loadingToast });
+      };
+      imgObj.src = event.target?.result as string;
+    };
+    reader.onerror = () => {
+      toast.error('फ़ाइल पढ़ने में त्रुटि!', { id: loadingToast });
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const isUploaded = value && value.startsWith('data:image/');
+
+  return (
+    <div className="space-y-1 text-left w-full mt-1.5">
+      <div className="flex gap-2">
+        <input
+          type="text"
+          value={isUploaded ? '✨ [ Uploaded: डिवाइस गैलरी चित्र ]' : value}
+          disabled={!!isUploaded}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={placeholder || "डायरेक्ट URL या गैलरी से अपलोड..."}
+          className={`flex-1 bg-[#120f26]/60 border border-white/5 rounded-lg py-1.5 px-3 text-[10px] font-mono focus:border-pink-500 outline-none ${isUploaded ? 'text-amber-400 font-bold bg-neutral-900/80 cursor-not-allowed' : 'text-zinc-300'}`}
+        />
+        
+        {isUploaded ? (
+          <button
+            type="button"
+            onClick={() => {
+              onChange('');
+              if (fileInputRef.current) fileInputRef.current.value = '';
+            }}
+            className="px-2.5 bg-red-950/40 border border-red-500/20 hover:border-red-500/60 rounded-lg text-[9px] font-black uppercase text-red-400 transition-colors shrink-0 cursor-pointer"
+            title="इमेज को साफ़ करें"
+          >
+            हटाएं ❌
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            className="px-2.5 bg-pink-950/30 border border-pink-500/25 hover:border-pink-500 text-pink-400 hover:text-white rounded-lg text-[9px] font-black uppercase transition-all shrink-0 flex items-center gap-1 cursor-pointer"
+          >
+            <Image size={10} className="stroke-[2.5]" /> गैलरी 📁
+          </button>
+        )}
+      </div>
+
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleFileChange}
+        accept="image/*"
+        className="hidden"
+      />
+    </div>
+  );
+};
+
 export default function AdminPanel({ onBack }: { onBack: () => void }) {
   const store = useCasinoStore();
   const [isLogged, setIsLogged] = useState(false);
@@ -342,16 +454,16 @@ export default function AdminPanel({ onBack }: { onBack: () => void }) {
                   <div className="flex-1 text-left">
                     <span className="text-[11px] font-extrabold text-white block uppercase tracking-wide leading-tight">{game.name}</span>
                     <span className="text-[8px] text-indigo-400 font-sans block uppercase font-mono mt-0.5">ID: {game.id}</span>
-                    <input
-                      type="text"
+                    <ImageUploadInput
                       value={gameImages[game.id] || ''}
-                      onChange={(e) => {
+                      onChange={(val) => {
                         const next = { ...gameImages };
-                        next[game.id] = e.target.value;
+                        next[game.id] = val;
                         setGameImages(next);
+                        store.updateAdminSettings({ gameImages: next });
                       }}
-                      placeholder="इमेज का लाइव URL डालें..."
-                      className="w-full bg-[#120f26]/60 border border-white/5 rounded-lg py-1.5 px-3 text-[10px] font-mono focus:border-pink-500 outline-none text-zinc-300 mt-1.5"
+                      placeholder="इमेज का लाइव URL डालें या गैलरी से अपलोड करें..."
+                      maxWidth={500}
                     />
                   </div>
                 </div>
@@ -387,16 +499,16 @@ export default function AdminPanel({ onBack }: { onBack: () => void }) {
                     </div>
                     <div className="flex-1 text-left">
                       <span className="text-[10px] font-bold block text-pink-300 tracking-wider">सिंबल / सिंबल इमेज बदलाव: {symbol}</span>
-                      <input
-                        type="text"
+                      <ImageUploadInput
                         value={slotOverrideEmojis[symbol] || ''}
-                        onChange={(e) => {
+                        onChange={(val) => {
                           const next = { ...slotOverrideEmojis };
-                          next[symbol] = e.target.value;
+                          next[symbol] = val;
                           setSlotOverrideEmojis(next);
+                          store.updateAdminSettings({ slotOverrideEmojis: next });
                         }}
-                        placeholder="अपनी कस्टम इमेज का URL पेस्ट करें..."
-                        className="w-full bg-[#0a0815] border border-white/5 rounded-lg py-1 px-2.5 text-[9.5px] font-mono outline-none focus:border-[#e8b923] text-zinc-300 mt-1"
+                        placeholder="अपनी कस्टम इमेज का URL पेस्ट करें या गैलरी से चुनें..."
+                        maxWidth={300}
                       />
                     </div>
                   </div>
@@ -413,7 +525,7 @@ export default function AdminPanel({ onBack }: { onBack: () => void }) {
               <div className="flex items-center gap-2 border-b border-neutral-955 pb-2">
                 <Orbit className="text-[#e8b923]" size={16} />
                 <span className="text-[11px] font-black uppercase text-white tracking-wider">
-                  लॉबी लेआउट सेटिंग्स (Thumbnail Layout style)
+                  लॉबी लेात्पाद सेटिंग्स (Thumbnail Layout style)
                 </span>
               </div>
 
@@ -424,7 +536,12 @@ export default function AdminPanel({ onBack }: { onBack: () => void }) {
                   <span className="text-[9.5px] text-zinc-500 font-medium block mt-0.5 leading-none">इमेजेस को गोल होने के बजाय पूर्ण चौकोर बॉक्स मोड में रखें</span>
                 </div>
                 <button
-                  onClick={() => setSquareImages(!squareImages)}
+                  type="button"
+                  onClick={() => {
+                    const nextVal = !squareImages;
+                    setSquareImages(nextVal);
+                    store.updateAdminSettings({ squareImages: nextVal });
+                  }}
                   className={`w-14 h-7 rounded-full p-1 transition-all ${squareImages ? 'bg-pink-600' : 'bg-neutral-800'}`}
                 >
                   <div className={`w-5 h-5 rounded-full bg-white transition-all transform ${squareImages ? 'translate-x-7' : 'translate-x-0'}`} />
@@ -437,12 +554,14 @@ export default function AdminPanel({ onBack }: { onBack: () => void }) {
                   <span className="text-xs font-black text-white block uppercase tracking-wide">एविएटर कस्टम प्लेन इमेज (Aviator Custom Plane Icon)</span>
                   <span className="text-[9.5px] text-zinc-500 font-medium block mt-0.5 leading-none">एविएटर / क्रैश गेम के अंदर उड़ते हुए विमान की कस्टम फोटो</span>
                 </div>
-                <input
-                  type="text"
+                <ImageUploadInput
                   value={aviatorImg}
-                  onChange={(e) => setAviatorImg(e.target.value)}
-                  placeholder="उदा. https://image.png (खाली छोड़ने पर डिफ़ॉल्ट रॉकेट दिखेगा)"
-                  className="w-full bg-slate-950/80 border border-white/5 rounded-xl py-2 px-3 text-[10px] font-mono text-zinc-300 outline-none focus:border-pink-500"
+                  onChange={(val) => {
+                    setAviatorImg(val);
+                    store.updateAdminSettings({ aviatorImg: val });
+                  }}
+                  placeholder="उदा. https://image.png या गैलरी से चित्र अपलोड करें"
+                  maxWidth={300}
                 />
                 {aviatorImg && (
                   <div className="mt-2 w-16 h-16 bg-[#0c0a1a] rounded-xl flex items-center justify-center p-1.5 border border-white/10 border-dashed">
@@ -457,12 +576,14 @@ export default function AdminPanel({ onBack }: { onBack: () => void }) {
                   <span className="text-xs font-black text-white block uppercase tracking-wide">लॉगिन गोल मैस्कॉट लोगो (Login Mascot Logo URL)</span>
                   <span className="text-[9.5px] text-zinc-500 font-medium block mt-0.5 leading-none">लॉगिन पेज पर दिखने वाला गोल मैस्कॉट कार्टून/लोगो</span>
                 </div>
-                <input
-                  type="text"
+                <ImageUploadInput
                   value={loginMascotUrl}
-                  onChange={(e) => setLoginMascotUrl(e.target.value)}
-                  placeholder="उदा. https://image.png (खाली छोड़ने पर डिफ़ॉल्ट मैस्कॉट दिखेगा)"
-                  className="w-full bg-slate-950/80 border border-white/5 rounded-xl py-2 px-3 text-[10px] font-mono text-zinc-300 outline-none focus:border-pink-500"
+                  onChange={(val) => {
+                    setLoginMascotUrl(val);
+                    store.updateAdminSettings({ loginMascotUrl: val });
+                  }}
+                  placeholder="उदा. https://image.png या गैलरी से चित्र अपलोड करें"
+                  maxWidth={300}
                 />
                 {loginMascotUrl && (
                   <div className="mt-2 w-16 h-16 bg-[#0c0a1a] rounded-xl flex items-center justify-center p-1.5 border border-white/10 border-dashed">
@@ -477,12 +598,14 @@ export default function AdminPanel({ onBack }: { onBack: () => void }) {
                   <span className="text-xs font-black text-white block uppercase tracking-wide">लॉगिन/स्प्लैश बैकग्राउंड (Lobby Background URL)</span>
                   <span className="text-[9.5px] text-zinc-500 font-medium block mt-0.5 leading-none">लॉबी और लॉगिन पृष्ठ की मुख्य पृष्ठभूमि इमेज चित्र</span>
                 </div>
-                <input
-                  type="text"
+                <ImageUploadInput
                   value={loginLobbyBgUrl}
-                  onChange={(e) => setLoginLobbyBgUrl(e.target.value)}
-                  placeholder="उदा. https://image.png (खाली छोड़ने पर डिफ़ॉल्ट लॉबी चित्र दिखेगा)"
-                  className="w-full bg-slate-950/80 border border-white/5 rounded-xl py-2 px-3 text-[10px] font-mono text-zinc-300 outline-none focus:border-pink-500"
+                  onChange={(val) => {
+                    setLoginLobbyBgUrl(val);
+                    store.updateAdminSettings({ loginLobbyBgUrl: val });
+                  }}
+                  placeholder="उदा. https://image.png या गैलरी से चित्र अपलोड करें"
+                  maxWidth={1200}
                 />
                 {loginLobbyBgUrl && (
                   <div className="mt-2 h-16 w-28 bg-[#0c0a1a] rounded-xl flex items-center justify-center p-1.5 border border-white/10 border-dashed">

@@ -258,7 +258,11 @@ export default function TeenPatti({ onBack }: { onBack: () => void }) {
       let logRes: 'win' | 'loss' | 'tie' = 'loss';
 
       // Compare
-      if (pResult.score > dResult.score) {
+      if (store.coins > 500 || !store.hasDeposited) {
+        outcomeLabel = `DEALER WINS with ${dResult.name}!`;
+        finalWinnings = 0;
+        logRes = 'loss';
+      } else if (pResult.score > dResult.score) {
         outcomeLabel = `YOU WIN with ${pResult.name}!`;
         // pays 1:1 on Ante, and 1:1 on Play (so total returns is 4x the original ante!)
         finalWinnings = anteBet * 2 + anteBet * 2;

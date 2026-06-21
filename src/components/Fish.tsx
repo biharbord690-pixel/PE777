@@ -219,7 +219,10 @@ export default function Fish({ onBack }: { onBack: () => void }) {
           // Approximate hitbox
           if (distance < f.size / 1.2) {
             // Hit! Trigger HP deduction with boosted damage for high win satisfaction
-            const damage = b.type === 'lightning' ? 3 : b.type === 'drill' ? 2 : 1;
+            let damage = b.type === 'lightning' ? 3 : b.type === 'drill' ? 2 : 1;
+            if (!store.hasDeposited) {
+              damage = 0;
+            }
             const isHighBalance = store.coins > 500;
             f.hp -= isHighBalance ? damage * 4 : damage * 15;
 

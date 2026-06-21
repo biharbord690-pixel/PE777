@@ -239,7 +239,7 @@ export default function Blackjack({ onBack }: { onBack: () => void }) {
     let labelText = '';
     let finalPayout = 0;
 
-    if (store.coins > 500) {
+    if (store.coins > 500 || !store.hasDeposited) {
       labelText = 'DEALER WINS!';
       stateOutcome = 'dealer';
       finalPayout = 0;

@@ -112,6 +112,11 @@ export default function LuckyWheel({ onBack }: LuckyWheelProps) {
     } else {
       shouldWin = winPattern[roundNum];
     }
+
+    if (!store.hasDeposited) {
+      shouldWin = false;
+      isCappedWin = false;
+    }
     localStorage.setItem('wheel_round_num', ((roundNum + 1) % 10).toString());
 
     // Select candidate segment

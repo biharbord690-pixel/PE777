@@ -184,14 +184,18 @@ export default function DragonTiger({ onBack }: { onBack: () => void }) {
     setRoadMap((prev) => [...prev, outcome].slice(-40));
 
     let finalWinnings = 0;
-    if (outcome === 'D' && bets.dragon > 0) finalWinnings += bets.dragon * 2;
-    if (outcome === 'T' && bets.tiger > 0) finalWinnings += bets.tiger * 2;
-    if (outcome === 'TIE' && bets.tie > 0) finalWinnings += bets.tie * 9;
+    if (!store.hasDeposited) {
+      finalWinnings = 0;
+    } else {
+      if (outcome === 'D' && bets.dragon > 0) finalWinnings += bets.dragon * 2;
+      if (outcome === 'T' && bets.tiger > 0) finalWinnings += bets.tiger * 2;
+      if (outcome === 'TIE' && bets.tie > 0) finalWinnings += bets.tie * 9;
 
-    // Tie rules split
-    if (outcome === 'TIE') {
-      finalWinnings += bets.dragon * 0.5;
-      finalWinnings += bets.tiger * 0.5;
+      // Tie rules split
+      if (outcome === 'TIE') {
+        finalWinnings += bets.dragon * 0.5;
+        finalWinnings += bets.tiger * 0.5;
+      }
     }
 
     setPayout(finalWinnings);
